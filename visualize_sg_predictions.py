@@ -14,7 +14,7 @@ from build_patch_dataset_orion_crc_reg import open_zarr_level0
 from build_patch_dataset_singular_genomics import SG_DATA_ROOT, SINGULAR_GENOMICS_BIOMARKERS
 from visualize_orion_predictions import (
     extract_patches, extract_he_tokens, make_grid_figure, run_inference, load_model,
-    compute_metrics, print_metrics, save_metrics_csv,
+    compute_metrics, compute_canvas_ssim, print_metrics, save_metrics_csv,
     TOKEN_GRID,
 )
 
@@ -267,10 +267,8 @@ def process_slide(disease: str, model, out_dir: Path,
 
     if mode == "composite":
         metrics = compute_metrics(preds, targets_remapped, sel)
-        print_metrics(metrics, title="Metrics (token-level)")
-        save_metrics_csv(metrics, out_dir / f"{disease}_metrics.csv")
 
-        fig = make_grid_figure(
+        fig, pred_canvas, tgt_canvas = make_grid_figure(
             coords, he_tokens, preds, targets_remapped,
             H, W, patch_size_level0,
             token_grid=TOKEN_GRID,
@@ -278,6 +276,13 @@ def process_slide(disease: str, model, out_dir: Path,
             title=disease,
             canvas_px=panel_px,
         )
+
+        ssim_map = compute_canvas_ssim(pred_canvas, tgt_canvas, sel)
+        for row in metrics:
+            row['ssim'] = ssim_map.get(row['marker'], np.nan)
+
+        print_metrics(metrics, title="Metrics (SSIM on slide canvas)")
+        save_metrics_csv(metrics, out_dir / f"{disease}_metrics.csv")
         out_path = out_dir / f"{disease}-{'-'.join(s[1] for s in sel)}.png"
     else:
         fig = visualize_per_marker(

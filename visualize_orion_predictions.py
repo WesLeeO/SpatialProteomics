@@ -143,38 +143,40 @@ def run_inference(model, patches_np: np.ndarray) -> np.ndarray:
 def compute_metrics(preds: np.ndarray, targets: np.ndarray, sel: list) -> list:
     """
     preds / targets: (N, C, G, G) float32 in [0, 1]
-    sel: [(channel_idx, name), ...]
-    Returns list of dicts: marker, pearson_r, psnr, ssim.
+    Returns list of dicts: marker, pearson_r, psnr, ssim.  SSIM filled later from canvas.
     """
     from scipy.stats import pearsonr
-    from skimage.metrics import structural_similarity
-
-    N, C, G, _ = preds.shape
-    win_size = 7 if G >= 8 else (G - 1) | 1   # largest odd ≤ G-1, min 1
 
     rows = []
     for ch, name in sel:
-        p = preds[:, ch].astype(np.float64)    # (N, G, G)
-        t = targets[:, ch].astype(np.float64)  # (N, G, G)
-
-        p_flat, t_flat = p.ravel(), t.ravel()
+        p_flat = preds[:, ch].ravel().astype(np.float64)
+        t_flat = targets[:, ch].ravel().astype(np.float64)
         if len(p_flat) < 2 or t_flat.std() < 1e-8:
             rows.append(dict(marker=name, pearson_r=np.nan, psnr=np.nan, ssim=np.nan))
             continue
-
         pr, _ = pearsonr(p_flat, t_flat)
-
-        mse = float(np.mean((p_flat - t_flat) ** 2))
+        mse  = float(np.mean((p_flat - t_flat) ** 2))
         psnr = 20.0 * np.log10(1.0 / np.sqrt(mse)) if mse > 0 else np.inf
-
-        ssim_vals = [
-            structural_similarity(t[i], p[i], data_range=1.0, win_size=win_size)
-            for i in range(N)
-        ]
-
-        rows.append(dict(marker=name, pearson_r=float(pr),
-                         psnr=float(psnr), ssim=float(np.mean(ssim_vals))))
+        rows.append(dict(marker=name, pearson_r=float(pr), psnr=float(psnr), ssim=np.nan))
     return rows
+
+
+def compute_canvas_ssim(
+    pred_canvas: np.ndarray,   # (H, W, n_sel) float32, NaN for unvisited
+    tgt_canvas:  np.ndarray,   # (H, W, n_sel) float32, NaN for unvisited
+    sel: list,
+) -> dict[str, float]:
+    """Compute SSIM per marker on the assembled slide canvas."""
+    from skimage.metrics import structural_similarity
+    out = {}
+    for k, (_, name) in enumerate(sel):
+        p = np.nan_to_num(pred_canvas[:, :, k], nan=0.).astype(np.float64)
+        t = np.nan_to_num(tgt_canvas[:,  :, k], nan=0.).astype(np.float64)
+        if t.std() < 1e-8:
+            out[name] = np.nan
+            continue
+        out[name] = float(structural_similarity(t, p, data_range=1.0, win_size=7))
+    return out
 
 
 def print_metrics(rows: list, title: str = ""):
@@ -290,7 +292,7 @@ def make_grid_figure(
     pred_if = composite(pred_canvas)
     tgt_if  = composite(tgt_canvas)
 
-    he_rgb = np.nan_to_num(he_canvas, nan=1.)   # white background in H&E
+    he_rgb = np.nan_to_num(he_canvas, nan=1.)
     he_rgb = np.clip(he_rgb, 0., 1.)
 
     # ── Scale to canvas_px for display ───────────────────────────────────────
@@ -352,7 +354,7 @@ def make_grid_figure(
     if title:
         fig.suptitle(title, fontsize=9, y=1.01)
 
-    return fig
+    return fig, pred_canvas, tgt_canvas
 
 
 # ---------------------------------------------------------------------------
@@ -414,10 +416,8 @@ def process_slide(slide: str, model, out_dir: Path,
         sel = [(names.index(n), n) for n in names]
 
     metrics = compute_metrics(preds, targets, sel)
-    print_metrics(metrics, title="Metrics (token-level)")
-    save_metrics_csv(metrics, out_dir / f"{slide}_metrics.csv")
 
-    fig = make_grid_figure(
+    fig, pred_canvas, tgt_canvas = make_grid_figure(
         coords, he_tokens, preds, targets,
         H, W, patch_size_level0,
         token_grid=TOKEN_GRID,
@@ -425,6 +425,13 @@ def process_slide(slide: str, model, out_dir: Path,
         title=slide,
         canvas_px=panel_px
     )
+
+    ssim_map = compute_canvas_ssim(pred_canvas, tgt_canvas, sel)
+    for row in metrics:
+        row['ssim'] = ssim_map.get(row['marker'], np.nan)
+
+    print_metrics(metrics, title="Metrics (SSIM on slide canvas)")
+    save_metrics_csv(metrics, out_dir / f"{slide}_metrics.csv")
 
     out_path = out_dir / f"{slide}-{'-'.join([s[1] for s in sel])}.png"
     fig.savefig(out_path, bbox_inches="tight")

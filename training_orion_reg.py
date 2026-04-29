@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from pathlib import Path
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr
 from dotenv import load_dotenv
 from huggingface_hub import login
 from torch.utils.data import DataLoader, random_split, Subset
@@ -71,23 +71,34 @@ class Logger:
 
 # ── Metrics ───────────────────────────────────────────────────────────────────
 
-def pearson_per_marker(preds: np.ndarray, targets: np.ndarray) -> np.ndarray:
-    """
-    preds / targets: (N, C, G, G)  — flatten spatial dims before computing Pearson
-    so each (patch, token) pair is treated as an independent observation.
-    Returns (C,) array of Pearson r values.
-    """
-    N, C, G, _ = preds.shape
-    p = preds.transpose(0, 2, 3, 1).reshape(-1, C)    # (N*G*G, C)
-    t = targets.transpose(0, 2, 3, 1).reshape(-1, C)
-    return np.array([pearsonr(p[:, j], t[:, j])[0] for j in range(C)])
+
+class OnlinePearson:
+    """Streaming Pearson r — accumulates 5 sufficient statistics per marker."""
+    def __init__(self, C: int):
+        self.n    = np.zeros(C, dtype=np.float64)
+        self.sx   = np.zeros(C, dtype=np.float64)
+        self.sy   = np.zeros(C, dtype=np.float64)
+        self.sxx  = np.zeros(C, dtype=np.float64)
+        self.syy  = np.zeros(C, dtype=np.float64)
+        self.sxy  = np.zeros(C, dtype=np.float64)
+
+    def update(self, preds: np.ndarray, targets: np.ndarray):
+        """preds / targets: (B, C, G, G) float32"""
+        B, C, G, _ = preds.shape
+        p = preds.transpose(0, 2, 3, 1).reshape(-1, C).astype(np.float64)   # (N, C)
+        t = targets.transpose(0, 2, 3, 1).reshape(-1, C).astype(np.float64)
+        self.n   += p.shape[0]
+        self.sx  += p.sum(0);  self.sy  += t.sum(0)
+        self.sxx += (p * p).sum(0);  self.syy += (t * t).sum(0)
+        self.sxy += (p * t).sum(0)
+
+    def compute(self) -> np.ndarray:
+        num  = self.n * self.sxy - self.sx * self.sy
+        den  = np.sqrt(np.maximum((self.n * self.sxx - self.sx**2) *
+                                   (self.n * self.syy - self.sy**2), 0.0))
+        return np.where(den > 0, num / den, 0.0)
 
 
-def spearman_per_marker(preds: np.ndarray, targets: np.ndarray) -> np.ndarray:
-    N, C, G, _ = preds.shape
-    p = preds.transpose(0, 2, 3, 1).reshape(-1, C)
-    t = targets.transpose(0, 2, 3, 1).reshape(-1, C)
-    return np.array([spearmanr(p[:, j], t[:, j])[0] for j in range(C)])
 
 
 # ── FDS helpers ───────────────────────────────────────────────────────────────
@@ -133,9 +144,9 @@ def run_epoch(model, loader, criterion, optimizer=None, scaler=None, scheduler=N
         fds_sum    = torch.zeros(C, bucket_num, feat_dim)
         fds_sumsq  = torch.zeros(C, bucket_num, feat_dim)
 
-    total_loss = 0.0
-    all_preds, all_targets = [], []
-    count = 0
+    total_loss  = 0.0
+    count       = 0
+    pearson_acc = None
 
     with torch.set_grad_enabled(training):
         for i, (patches, targets_cpu, masks_cpu) in enumerate(loader):
@@ -166,8 +177,13 @@ def run_epoch(model, loader, criterion, optimizer=None, scaler=None, scheduler=N
             total_loss += loss.item() * active_elements
             count += active_elements
 
-            all_preds.append(preds.detach().float().cpu().numpy())
-            all_targets.append(targets_cpu.numpy())
+            p_np = preds.detach().float().cpu().numpy()
+            t_np = targets_cpu.numpy()
+
+            if pearson_acc is None:
+                pearson_acc = OnlinePearson(p_np.shape[1])
+
+            pearson_acc.update(p_np, t_np)
             print(f'End batch {i+1}/{len(loader)}')
 
     # After training epoch: update FDS running stats then snapshot + smooth
@@ -178,20 +194,16 @@ def run_epoch(model, loader, criterion, optimizer=None, scaler=None, scheduler=N
             )
             fds_j.update_last_epoch_stats(epoch + 1)
 
-    all_preds   = np.concatenate(all_preds,   axis=0)   # (N, C, G, G)
-    all_targets = np.concatenate(all_targets, axis=0)
-    mean_loss   = total_loss / count
-    p_per_marker = pearson_per_marker(all_preds, all_targets)
-    s_per_marker = spearman_per_marker(all_preds, all_targets)
-    return mean_loss, p_per_marker, s_per_marker
+    mean_loss    = total_loss / count
+    p_per_marker = pearson_acc.compute()
+    return mean_loss, p_per_marker
 
 
 # ── Plotting ──────────────────────────────────────────────────────────────────
 
-def plot_curves(train_losses, val_losses, train_pearsons, val_pearsons,
-                train_spearmans, val_spearmans, marker_names):
+def plot_curves(train_losses, val_losses, train_pearsons, val_pearsons, marker_names):
     epochs = range(1, len(train_losses) + 1)
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 4))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
     ax1.plot(epochs, train_losses, label="Train")
     ax1.plot(epochs, val_losses,   label="Val")
     ax1.set_title("MSE Loss"); ax1.legend()
@@ -199,10 +211,6 @@ def plot_curves(train_losses, val_losses, train_pearsons, val_pearsons,
     ax2.plot(epochs, [p.mean() for p in train_pearsons], label="Train")
     ax2.plot(epochs, [p.mean() for p in val_pearsons],   label="Val")
     ax2.set_title("Mean Pearson r"); ax2.legend()
-
-    ax3.plot(epochs, [s.mean() for s in train_spearmans], label="Train")
-    ax3.plot(epochs, [s.mean() for s in val_spearmans],   label="Val")
-    ax3.set_title("Mean Spearman r"); ax3.legend()
 
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "training_curves.png", dpi=150)
@@ -228,28 +236,6 @@ def plot_curves(train_losses, val_losses, train_pearsons, val_pearsons,
     plt.suptitle("Per-marker Pearson r", fontsize=10)
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "per_marker_pearson.png", dpi=150)
-    plt.close()
-
-    # Per-marker Spearman grid
-    val_mat = np.stack(val_spearmans)   # (epochs, C)
-    C = val_mat.shape[1]
-    ncols = 6
-    nrows = int(np.ceil(C / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 3, nrows * 2.5), squeeze=False)
-    for j in range(C):
-        ax = axes[j // ncols][j % ncols]
-        ax.plot(epochs, [r[j] for r in train_spearmans], label="Train")
-        ax.plot(epochs, val_mat[:, j], label="Val")
-        ax.set_title(marker_names[j] if marker_names else f"M{j}", fontsize=8)
-        ax.set_ylim(-1, 1)
-        ax.axhline(0, color="gray", linewidth=0.5, linestyle="--")
-    for j in range(C, nrows * ncols):
-        axes[j // ncols][j % ncols].set_visible(False)
-    handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower right", fontsize=8)
-    plt.suptitle("Per-marker Spearman Rank", fontsize=10)
-    plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "per_marker_spearman.png", dpi=150)
     plt.close()
 
 
@@ -306,32 +292,30 @@ def train():
     criterion = torch.nn.MSELoss()
     scaler    = torch.amp.GradScaler('cuda')
 
-    train_losses,   val_losses    = [], []
-    train_pearsons, val_pearsons  = [], []
-    train_spearmans, val_spearmans = [], []
+    train_losses,   val_losses   = [], []
+    train_pearsons, val_pearsons = [], []
     best_val_pearson = -np.inf
 
     def _run_one_epoch(epoch, optimizer, scheduler=None):
         epoch_0idx = epoch - 1
         print(f'Epoch {epoch}...')
         print('Training...')
-        train_loss, train_p, train_s = run_epoch(
+        train_loss, train_p = run_epoch(
             model, train_loader, criterion, optimizer,
             scaler=scaler, scheduler=scheduler, epoch=epoch_0idx,
         )
         print('Validating...')
-        val_loss, val_p, val_s = run_epoch(model, val_loader, criterion)
+        val_loss, val_p = run_epoch(model, val_loader, criterion)
 
-        train_losses.append(train_loss);     val_losses.append(val_loss)
-        train_pearsons.append(train_p);      val_pearsons.append(val_p)
-        train_spearmans.append(train_s);     val_spearmans.append(val_s)
+        train_losses.append(train_loss);  val_losses.append(val_loss)
+        train_pearsons.append(train_p);   val_pearsons.append(val_p)
 
         print(f"Epoch {epoch:3d}/{NUM_EPOCHS} | "
               f"train loss {train_loss:.4f}  r {train_p.mean():.4f} | "
               f"val loss {val_loss:.4f}  r {val_p.mean():.4f}")
         names = marker_names or [f"M{j}" for j in range(len(val_p))]
-        for name, p, s in zip(names, val_p, val_s):
-            print(f"    {name:<20s}  pearson {p:.4f}  spearman {s:.4f}")
+        for name, p in zip(names, val_p):
+            print(f"    {name:<20s}  pearson {p:.4f}")
 
         nonlocal best_val_pearson
         if val_p.mean() > best_val_pearson:
@@ -339,15 +323,12 @@ def train():
             torch.save(model.state_dict(), OUTPUT_DIR / "best_model.pt")
             print(f"  → best model saved (val r={best_val_pearson:.4f})")
 
-        np.save(OUTPUT_DIR / "train_losses.npy",    np.array(train_losses))
-        np.save(OUTPUT_DIR / "val_losses.npy",      np.array(val_losses))
-        np.save(OUTPUT_DIR / "train_pearsons.npy",  np.stack(train_pearsons))
-        np.save(OUTPUT_DIR / "val_pearsons.npy",    np.stack(val_pearsons))
-        np.save(OUTPUT_DIR / "train_spearmans.npy", np.stack(train_spearmans))
-        np.save(OUTPUT_DIR / "val_spearmans.npy",   np.stack(val_spearmans))
-        np.save(OUTPUT_DIR / "marker_names.npy",    np.array(marker_names))
-        plot_curves(train_losses, val_losses, train_pearsons, val_pearsons,
-                    train_spearmans, val_spearmans, marker_names)
+        np.save(OUTPUT_DIR / "train_losses.npy",   np.array(train_losses))
+        np.save(OUTPUT_DIR / "val_losses.npy",     np.array(val_losses))
+        np.save(OUTPUT_DIR / "train_pearsons.npy", np.stack(train_pearsons))
+        np.save(OUTPUT_DIR / "val_pearsons.npy",   np.stack(val_pearsons))
+        np.save(OUTPUT_DIR / "marker_names.npy",   np.array(marker_names))
+        plot_curves(train_losses, val_losses, train_pearsons, val_pearsons, marker_names)
 
     # ── Phase 1: head only ────────────────────────────────────────────────────
     head_params = [p for p in model.parameters() if p.requires_grad]
@@ -398,14 +379,13 @@ def train():
     print("\n── Test set evaluation ──")
     best_state = torch.load(OUTPUT_DIR / "best_model.pt", map_location=device)
     model.load_state_dict(best_state, strict=False)
-    test_loss, test_p, test_s = run_epoch(model, test_loader, criterion)
+    test_loss, test_p = run_epoch(model, test_loader, criterion)
     print(f"Test loss {test_loss:.4f} | mean Pearson r {test_p.mean():.4f}")
     names = marker_names or [f"M{j}" for j in range(len(test_p))]
-    for name, p, s in zip(names, test_p, test_s):
-        print(f"    {name:<20s}  pearson {p:.4f}  spearman {s:.4f}")
-    np.save(OUTPUT_DIR / "test_pearsons.npy",  test_p)
-    np.save(OUTPUT_DIR / "test_spearmans.npy", test_s)
-    np.save(OUTPUT_DIR / "test_slides.npy",    np.array(test_slides))
+    for name, p in zip(names, test_p):
+        print(f"    {name:<20s}  pearson {p:.4f}")
+    np.save(OUTPUT_DIR / "test_pearsons.npy", test_p)
+    np.save(OUTPUT_DIR / "test_slides.npy",   np.array(test_slides))
 
 
 if __name__ == "__main__":
