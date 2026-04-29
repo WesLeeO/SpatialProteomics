@@ -23,12 +23,13 @@ from model import SpatialModel
 MODEL_NAME  = 'UNI2'
 H5_DIR      = Path("orion_crc_patch_dataset_reg")
 TIFF_DIR    = Path("/mnt/ssd1/virtual_proteomics/data/ORION_CRC")
-OUTPUT_DIR  = Path(f"outputs_orion_token_{MODEL_NAME}_finetuning")
+OUTPUT_DIR  = Path(f"outputs_orion_token_{MODEL_NAME}_finetuning_full")
 TOKEN_GRID  = 16          # must match build_patch_dataset_orion_crc_reg.py
 NUM_OUTPUTS = 16          # number of IF markers
-VAL_FRAC    = 0.2
+VAL_FRAC    = 0.15
+TEST_FRAC   = 0.15
 BATCH_SIZE  = 512
-NUM_EPOCHS  = 30
+NUM_EPOCHS  = 40
 LR          = 1e-4
 NUM_WORKERS = 4
 SEED        = 42
@@ -262,22 +263,40 @@ def train():
     load_dotenv()
     login(token=os.getenv("HF_TOKEN"))
 
-    dataset      = OrionSpatialDataset(str(H5_DIR), str(TIFF_DIR))
-    marker_names = dataset.marker_names
+    # ── Slide-level train / val / test split ─────────────────────────────────────
+    all_slides = sorted(f.replace('_patch_dataset.h5', '')
+                        for f in os.listdir(H5_DIR) if f.endswith('.h5'))
+    rng = np.random.default_rng(SEED)
+    rng.shuffle(all_slides)
 
-    n_val   = int(len(dataset) * VAL_FRAC)
-    n_train = len(dataset) - n_val
-    train_ds, val_ds = random_split(
-        dataset, [n_train, n_val],
-        generator=torch.Generator().manual_seed(SEED),
-    )
+    n_test  = max(1, round(len(all_slides) * TEST_FRAC))
+    n_val   = max(1, round(len(all_slides) * VAL_FRAC))
+    test_slides  = all_slides[:n_test]
+    val_slides   = all_slides[n_test:n_test + n_val]
+    train_slides = all_slides[n_test + n_val:]
 
-    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True,
+    print(f"Slides — train: {train_slides}")
+    print(f"         val:   {val_slides}")
+    print(f"         test:  {test_slides}")
+
+    train_dataset = OrionSpatialDataset(str(H5_DIR), str(TIFF_DIR),
+                                        augment=True,  slide_names=train_slides)
+    val_dataset   = OrionSpatialDataset(str(H5_DIR), str(TIFF_DIR),
+                                        augment=False, slide_names=val_slides,
+                                        token_means=train_dataset.token_means)
+    test_dataset  = OrionSpatialDataset(str(H5_DIR), str(TIFF_DIR),
+                                        augment=False, slide_names=test_slides,
+                                        token_means=train_dataset.token_means)
+    marker_names  = train_dataset.marker_names
+
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True,
                               num_workers=NUM_WORKERS, pin_memory=True)
-    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False,
+    val_loader   = DataLoader(val_dataset,   batch_size=BATCH_SIZE, shuffle=False,
+                              num_workers=NUM_WORKERS, pin_memory=True)
+    test_loader  = DataLoader(test_dataset,  batch_size=BATCH_SIZE, shuffle=False,
                               num_workers=NUM_WORKERS, pin_memory=True)
 
-    print(f"Train: {len(train_ds)} | Val: {len(val_ds)} | Device: {device}")
+    #print(f"Train: {len(train_loader)} | Val: {len(val_loader)} | Test: {len(test_loader)}| Device: {device}")
 
     # Encoder fully frozen for phase 1; we unfreeze last N blocks manually at phase 2.
     model     = SpatialModel(MODEL_NAME, num_outputs=NUM_OUTPUTS,
@@ -374,6 +393,19 @@ def train():
         _run_one_epoch(epoch, optimizer_p2, scheduler=scheduler_p2)
 
     print(f"\nDone. Best val Pearson: {best_val_pearson:.4f}")
+
+    # ── Test evaluation (best checkpoint) ─────────────────────────────────────
+    print("\n── Test set evaluation ──")
+    best_state = torch.load(OUTPUT_DIR / "best_model.pt", map_location=device)
+    model.load_state_dict(best_state, strict=False)
+    test_loss, test_p, test_s = run_epoch(model, test_loader, criterion)
+    print(f"Test loss {test_loss:.4f} | mean Pearson r {test_p.mean():.4f}")
+    names = marker_names or [f"M{j}" for j in range(len(test_p))]
+    for name, p, s in zip(names, test_p, test_s):
+        print(f"    {name:<20s}  pearson {p:.4f}  spearman {s:.4f}")
+    np.save(OUTPUT_DIR / "test_pearsons.npy",  test_p)
+    np.save(OUTPUT_DIR / "test_spearmans.npy", test_s)
+    np.save(OUTPUT_DIR / "test_slides.npy",    np.array(test_slides))
 
 
 if __name__ == "__main__":
