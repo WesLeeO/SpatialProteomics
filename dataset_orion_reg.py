@@ -65,9 +65,9 @@ class OrionSpatialDataset(Dataset):
 
     def __init__(self, h5_dir: str, tiff_dir: str, num_slides: int = 0,
                  augment: bool = False,
-                 p_geom: float = 0.5,
-                 p_color: float = 0.3,
-                 p_brightness: float = 0.2,
+                 p_geom: float = 0.7,
+                 p_color: float = 0.4,
+                 p_brightness: float = 0.4,
                  slide_names: list = None,
                  token_means: torch.Tensor = None):
         self.patch_map    = []
@@ -141,6 +141,88 @@ class OrionSpatialDataset(Dataset):
             self.token_means = torch.from_numpy((total_sum / total_n).astype(np.float32))  # (C,)
         else:
             self.token_means = None
+
+    def compute_marker_stds(self) -> torch.Tensor:
+        """Per-marker std across every token in the dataset. Shape: (C,)"""
+        C           = self.targets[0].shape[0]
+        total_sum   = np.zeros(C, dtype=np.float64)
+        total_sumsq = np.zeros(C, dtype=np.float64)
+        total_n     = 0
+        for t in self.targets:
+            flat         = t.reshape(C, -1)       # (C, G*G)
+            total_sum   += flat.sum(axis=1)
+            total_sumsq += (flat ** 2).sum(axis=1)
+            total_n     += flat.shape[1]
+        mean = total_sum / total_n
+        var  = total_sumsq / total_n - mean ** 2
+        return torch.from_numpy(np.sqrt(np.maximum(var, 0.0)).astype(np.float32))
+
+    def compute_sampling_weights(
+        self,
+        hard_marker_names: list[str] | None = None,
+        sparse_threshold: float = 0.01,
+        top_pct: float = 99,
+        cap: float = 10.0,
+    ) -> torch.Tensor:
+        """
+        Per-patch sampling weight for WeightedRandomSampler.
+
+        Binary scheme: a patch is "positive" for marker j if its max token
+        expression exceeds the top_pct percentile of patch_max for that marker.
+        Weight = clip(1 + n_positive_markers, 1, cap).
+
+        Positive for 0 markers → weight 1 (baseline).
+        Positive for 1 marker  → weight 2.
+        Positive for all 5     → weight 6 (or cap if lower).
+
+        hard_marker_names : explicit marker names, or None to auto-select markers
+                            with token mean < sparse_threshold.
+        top_pct           : percentile threshold per marker (default 99 → top 1%).
+        cap               : maximum weight.
+        """
+        N = len(self.targets)
+        if N == 0:
+            return torch.ones(0)
+
+        C = self.targets[0].shape[0]
+
+        if hard_marker_names is not None:
+            name_to_idx = {n: j for j, n in enumerate(self.marker_names)}
+            hard_idx = [name_to_idx[n] for n in hard_marker_names if n in name_to_idx]
+        elif self.token_means is not None:
+            means = self.token_means.numpy()
+            hard_idx = [j for j in range(C) if means[j] < sparse_threshold]
+        else:
+            hard_idx = list(range(C))
+
+        if not hard_idx:
+            print("compute_sampling_weights: no hard markers found, uniform weights.")
+            return torch.ones(N, dtype=torch.float32)
+
+        hard_names = [self.marker_names[j] for j in hard_idx] if self.marker_names else hard_idx
+        print(f"compute_sampling_weights: hard markers ({len(hard_idx)}) = {hard_names}")
+
+        # patch-level max per marker, computed in chunks to avoid memory spike
+        chunk = 8192
+        patch_max = np.empty((N, C), dtype=np.float32)
+        for start in range(0, N, chunk):
+            end   = min(start + chunk, N)
+            batch = np.stack(self.targets[start:end])              # (chunk, C, G, G)
+            patch_max[start:end] = batch.reshape(end - start, C, -1).max(axis=2)
+
+        # count how many hard markers each patch is "positive" for
+        n_pos = np.zeros(N, dtype=np.float32)
+        for j in hard_idx:
+            thresh = float(np.percentile(patch_max[:, j], top_pct))
+            n_pos += (patch_max[:, j] > thresh).astype(np.float32)
+
+        weights = np.clip(1.0 + n_pos, 1.0, cap).astype(np.float32)
+        n_up = (weights > 1.0).sum()
+        print(f"  weight stats  min={weights.min():.2f}  p50={np.median(weights):.2f}  "
+              f"p95={np.percentile(weights, 95):.2f}  max={weights.max():.2f}")
+        print(f"  upweighted patches: {n_up:,}/{N:,} ({100.0*n_up/N:.1f}%)")
+        print(f"  mean weight of upweighted: {weights[weights > 1.0].mean():.3f}")
+        return torch.from_numpy(weights)
 
     def __len__(self) -> int:
         return len(self.patch_map)

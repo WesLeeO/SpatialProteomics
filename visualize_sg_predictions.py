@@ -22,7 +22,7 @@ from visualize_orion_predictions import (
 # Paths / constants
 # ---------------------------------------------------------------------------
 SG_H5_DIR       = Path("singular_genomics")
-SG_MODEL_DIR    = Path("outputs_orion_token_UNI2_finetuning")
+SG_MODEL_DIR    = Path("outputs_orion_token_UNI2_finetuning_full")
 DEFAULT_OUT_DIR = Path("visualize_sg_out")
 
 # ORION channel order — index must match the model's output dimension

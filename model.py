@@ -236,7 +236,8 @@ class SpatialModel(nn.Module):
     """
     def __init__(self, base_model_name: str, num_outputs: int,
                  token_grid: int = 16, freeze: bool = True,
-                 fds_cfg: dict = None, unfreeze_last_n: int = 0):
+                 fds_cfg: dict = None, unfreeze_last_n: int = 0,
+                 conch_text_embs: torch.Tensor | None = None):
         super().__init__()
         self.token_grid  = token_grid
         self.num_outputs = num_outputs
@@ -248,6 +249,7 @@ class SpatialModel(nn.Module):
             nn.Linear(embed_dim, 256), nn.ReLU(), nn.Dropout(p=0.2),
             nn.Linear(256, 128),       nn.ReLU(), nn.Dropout(p=0.2),
         )
+        
         self.predictor = nn.Linear(128, num_outputs)
         self.predictors = nn.ModuleList([nn.Sequential(nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 1)) for _ in range(num_outputs)])
 
@@ -297,13 +299,11 @@ class SpatialModel(nn.Module):
             # Per-marker FDS: smooth h with each marker's label distribution,
             # then apply the corresponding row of the weight matrix.
             labels_flat = labels.permute(0, 2, 3, 1).reshape(N, self.num_outputs)  # (N, C)
-            W = self.predictor.weight   # (C, 128)
-            b = self.predictor.bias     # (C,)
             pred_cols = []
             for j, fds_j in enumerate(self.fds):
                 labels_np = labels_flat[:, j].detach().cpu().numpy()   # (N,)
                 h_j = fds_j.smooth(h.clone(), labels_np, epoch)        # (N, 128)
-                pred_cols.append(F.linear(h_j, W[j:j+1], b[j:j+1]))   # (N, 1)
+                pred_cols.append(self.predictors[j](h_j))   # (N, 1)
             preds = torch.cat(pred_cols, dim=1)                        # (N, C)
         else:
             preds = self.predictor(h)                                  # (N, C)

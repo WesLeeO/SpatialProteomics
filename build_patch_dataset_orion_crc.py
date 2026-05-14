@@ -1,20 +1,21 @@
 """
-Build ORION-CRC patch dataset for token-level regression training.
+Build ORION-CRC patch dataset for LDM training.
 
 Pipeline (per slide)
 --------------------
 1. TRIDENT  : tissue segmentation + patch coordinate extraction on H&E
 2. p99s     : per-channel 99th-percentile of AF-corrected foreground pixels
-3. targets  : per-patch (C, G, G) mean-expression grid where G=token_grid (16),
-              aligned with UNI2 patch tokens (patch_size=14, 224/14=16 tokens/side)
-4. Save HDF5: consumed by OrionSpatialDataset
+              (used for log1p normalisation in dataset_orion_ldm.__getitem__)
+3. pixel_stds: per-channel pixel std of LDM-normalised values across tissue
+              patches (used for 1/σ loss weights)
+4. Save HDF5: minimal file consumed by OrionLDMDataset
 
 HDF5 layout
 -----------
-  /coords   (N, 2)       int64   — (x, y) top-left in shared H&E/IF level-0 space
-  /p99s     (C,)         float32 — AF-corrected foreground p99 per channel
-  /targets  (N, C, G, G) float32 — normalised mean expression per token cell
-  attrs: sample, marker_names, patch_size, patch_size_level0, token_grid
+  /coords      (N, 2) int64   — (x, y) top-left in shared H&E/IF level-0 space
+  /p99s        (C,)   float32 — AF-corrected foreground p99 per channel
+  /pixel_stds  (C,)   float32 — pixel std of LDM-normalised values per channel
+  attrs: sample, marker_names, patch_size, patch_size_level0
 
 H&E (*-registered.ome.tif) and IF (*-zlib.ome.tiff) share the same pixel
 coordinate space (both MPP=0.325, pre-registered) — no Valis warp needed.
@@ -25,7 +26,6 @@ import json
 import subprocess
 import argparse
 import numpy as np
-import cv2
 import h5py
 import tifffile
 import zarr
@@ -35,8 +35,8 @@ from pathlib import Path
 ORION_DATA_DIR = Path("/mnt/ssd1/virtual_proteomics/data/ORION_CRC")
 TRIDENT_SCRIPT = Path("TRIDENT/run_batch_of_slides.py")
 LAMBDA_JSON    = Path("MIPHEI-ViT/preprocessings/mif_cleaning/lambda_settings/orion.json")
-JOB_DIR        = Path("orion_trident_output_reg")
-OUTPUT_DIR     = Path("orion_crc_patch_dataset_reg")
+JOB_DIR        = Path("orion_trident_output")
+OUTPUT_DIR     = Path("orion_crc_patch_dataset")
 
 ALL_CRC_SAMPLES = (
     [f"CRC{i:02d}" for i in range(1, 33)] +
@@ -157,19 +157,19 @@ def load_trident_coords(h5_path: Path) -> tuple[np.ndarray, int, float]:
 
 # ── Zarr / patch I/O ──────────────────────────────────────────────────────────
 
-def open_zarr_level0(path: Path, lru_bytes: int = 2 * 2**30):
+def open_zarr_level0(path: Path):
     """
-    Open OME-TIFF as a full-resolution zarr array with an LRU chunk cache.
+    Open OME-TIFF as a full-resolution zarr array.
     Returns (arr, c_ax, h_ax, w_ax).
     """
     tif   = tifffile.TiffFile(str(path))
-    store = zarr.LRUStoreCache(tif.aszarr(), max_size=lru_bytes)
+    store = tif.aszarr()
     z     = zarr.open(store, mode="r")
     arr   = z["0"] if isinstance(z, zarr.hierarchy.Group) else z
     ndim  = len(arr.shape)
 
     if ndim == 3:
-        if arr.shape[2] <= 4:
+        if arr.shape[2] <= 4: 
             return arr, 2, 0, 1
         else:
             return arr, 0, 1, 2
@@ -268,81 +268,66 @@ def compute_slide_p99s(
     return p99s
 
 
-def compute_token_grid_targets(
+# ── Pixel std computation ─────────────────────────────────────────────────────
+
+def compute_pixel_stds(
     arr, c_ax, h_ax, w_ax,
-    channel_params: list,
-    coords: np.ndarray,
-    patch_size_level0: int,
+    channel_params: list[tuple[int, str, float, float]],
+    bio_coords: np.ndarray,
+    patch_size: int,
     p99s: list[float],
     af_raw_ch: int = ORION_AF_RAW_CH,
-    token_grid: int = 16,
+    max_patches: int = 2000,
 ) -> np.ndarray:
     """
-    Compute (token_grid, token_grid) mean-expression grid for every patch.
+    Compute per-channel pixel std of LDM-normalised values across tissue patches.
+    Uses one-pass E[X²] − E[X]² with float64 accumulators.
 
-    Each cell (i, j) is the mean normalised IF intensity within the pixel region
-    that maps to UNI2 patch token (i, j).  With patch_size=14 on 224×224, UNI2
-    produces 224/14 = 16 tokens per side, so token_grid=16 by default.
+    Returns (C,) float32 array of pixel standard deviations.
 
-    Returns (N, C, token_grid, token_grid) float32.
+    For a marker where fraction f of pixels express (value → +1) and the rest
+    are background (value → −1):
+        σ = 2√(f(1−f))
+    Dense markers (f≈0.30) → σ≈0.92; sparse markers (f≈0.01) → σ≈0.20.
+    The resulting 1/σ weight ratio is ~4–5× — stable, no loss explosion.
     """
-    N        = len(coords)
-    C        = len(channel_params)
-    H_arr    = arr.shape[h_ax]
-    W_arr    = arr.shape[w_ax]
-    token_px = 224 // token_grid          # = 14 for UNI2
-    targets  = np.zeros((N, C, token_grid, token_grid), dtype=np.float32)
+    C = len(channel_params)
+    H, W = arr.shape[h_ax], arr.shape[w_ax]
+    N = len(bio_coords)
 
-    # Precompute per-channel constants as (C,1,1) arrays for broadcasting
-    raw_chs  = [rc for rc, *_ in channel_params]
-    lams     = np.array([lam  for _, _, lam, _    in channel_params], np.float32)[:, None, None]
-    biases   = np.array([bias for _, _, _,   bias in channel_params], np.float32)[:, None, None]
-    p99s_arr = np.array(p99s, np.float32)[:, None, None]
+    if N > max_patches:
+        rng    = np.random.default_rng(0)
+        idx    = np.sort(rng.choice(N, max_patches, replace=False))
+        coords = bio_coords[idx]
+        print(f"    [pixel_stds] sampling {max_patches}/{N} patches", flush=True)
+    else:
+        coords = bio_coords
 
-    for i, (px, py) in enumerate(coords):
-        if i % 200 == 0:
-            print(f"    [{i}/{N}] computing token targets…", flush=True)
+    sum_x  = np.zeros(C, dtype=np.float64)
+    sum_x2 = np.zeros(C, dtype=np.float64)
+    n_pix  = 0
+
+    for px, py in coords:
         px, py = int(px), int(py)
+        af = read_patch(arr, c_ax, h_ax, w_ax, af_raw_ch, px, py, patch_size, H, W)
+        for ci, (raw_ch, _, lam, bias) in enumerate(channel_params):
+            sig    = read_patch(arr, c_ax, h_ax, w_ax, raw_ch, px, py, patch_size, H, W)
+            normed = normalize_patch(sig, af, lam, bias, p99s[ci]).ravel()
+            flat   = normed.astype(np.float64)
+            sum_x[ci]  += flat.sum()
+            sum_x2[ci] += (flat ** 2).sum()
+        n_pix += af.size
 
-        h_sl = slice(py, min(py + patch_size_level0, H_arr))
-        w_sl = slice(px, min(px + patch_size_level0, W_arr))
+    if n_pix == 0:
+        return np.ones(C, dtype=np.float32)
 
-        # single zarr read for all channels
-        idx       = [slice(None)] * arr.ndim
-        idx[h_ax] = h_sl
-        idx[w_ax] = w_sl
-        raw = arr[tuple(idx)].astype(np.float32)   # (C_total, H_p, W_p) or (H_p, W_p, C_total)
+    means = sum_x / n_pix
+    stds  = np.sqrt(np.maximum(sum_x2 / n_pix - means ** 2, 0.0)).astype(np.float32)
 
-        if c_ax == 0:
-            af   = raw[af_raw_ch]          # (H_p, W_p)
-            sigs = raw[raw_chs]            # (C, H_p, W_p)
-        else:
-            af   = raw[:, :, af_raw_ch]
-            sigs = raw[:, :, raw_chs].transpose(2, 0, 1)
+    for (_, name, _, _), s in zip(channel_params, stds):
+        print(f"    {name:<14}  σ={s:.4f}")
 
-        if af.shape[0] < token_grid or af.shape[1] < token_grid:
-            continue
-
-        # vectorised AF-correction + log1p normalisation over all C channels
-        normed = np.clip(
-            np.log1p(np.maximum(sigs - lams * af[None] + biases, 0.0) / p99s_arr),
-            0.0, 1.0,
-        )  # (C, H_p, W_p)
-
-        # single resize call on (H_p, W_p, C) image
-        resized = cv2.resize(
-            normed.transpose(1, 2, 0), (224, 224), interpolation=cv2.INTER_LINEAR
-        )  # (224, 224, C)
-
-        # block mean aligned to UNI2 token grid → (C, 16, 16)
-        targets[i] = (
-            resized
-            .reshape(token_grid, token_px, token_grid, token_px, C)
-            .mean(axis=(1, 3))
-            .transpose(2, 0, 1)
-        )
-
-    return targets
+    return stds
 
 
 def load_display_p99s(sample: str,
@@ -381,52 +366,40 @@ def load_display_p99s(sample: str,
         print(f"  [display p99] ch{ch_idx:02d}  {name:<10}  p99={p99s[-1]:.1f}")
     return p99s
 
-# ── p99 persistence ──────────────────────────────────────────────────────────
-
-def save_p99s_txt(
-    sample: str,
-    p99s: list[float],
-    channel_params: list,
-    p99s_txt: Path = OUTPUT_DIR / 'p99s_slide.txt',
-) -> None:
-    """Append sample p99s to p99s_slide.txt in load_display_p99s format."""
-    p99s_txt.parent.mkdir(parents=True, exist_ok=True)
-    with open(p99s_txt, "a") as fh:
-        fh.write(f"{sample}\n")
-        for (_, name, *_), val in zip(channel_params, p99s):
-            fh.write(f"  {name} {val}\n")
-    print(f"  p99s appended → {p99s_txt}")
-
-
 # ── HDF5 save ─────────────────────────────────────────────────────────────────
 
 def save_dataset(
     out_path: Path,
     coords: np.ndarray,
     p99s: list[float],
-    targets: np.ndarray,
+    pixel_stds: np.ndarray,
     marker_names: list[str],
     patch_size: int,
     patch_size_level0: int,
     sample: str,
-    token_grid: int = 16,
 ) -> None:
-    N, C, G, _ = targets.shape
+    """
+    Save the minimal HDF5 consumed by OrionLDMDataset.
+
+    /coords      (N, 2) int64   — (x, y) top-left in shared H&E/IF level-0 space
+    /p99s        (C,)   float32 — AF-corrected foreground p99, for normalize_patch
+    /pixel_stds  (C,)   float32 — pixel std of LDM-normalised values, for weights
+    attrs: sample, marker_names, patch_size, patch_size_level0
+    """
     with h5py.File(str(out_path), "w") as f:
-        f.create_dataset("coords",  data=coords, compression="gzip")
-        f.create_dataset("p99s",    data=np.array(p99s, dtype=np.float32))
-        f.create_dataset("targets", data=targets, compression="gzip",
-                         chunks=(min(256, N), C, G, G))
-        f.attrs["sample"]            = sample
-        f.attrs["marker_names"]      = marker_names
-        f.attrs["patch_size"]        = patch_size
-        f.attrs["patch_size_level0"] = patch_size_level0
-        f.attrs["token_grid"]        = token_grid
+        f.create_dataset("coords",      data=coords,                  compression="gzip")
+        f.create_dataset("p99s",        data=np.array(p99s,    dtype=np.float32))
+        f.create_dataset("pixel_stds",  data=np.array(pixel_stds, dtype=np.float32))
+        f.attrs["sample"]             = sample
+        f.attrs["marker_names"]       = marker_names
+        f.attrs["patch_size"]         = patch_size
+        f.attrs["patch_size_level0"]  = patch_size_level0
 
     mb = out_path.stat().st_size / 1e6
     print(f"\n  Saved → {out_path}  ({mb:.1f} MB)")
-    print(f"    /coords   {coords.shape}")
-    print(f"    /targets  {targets.shape}  mean={targets.mean():.4f}")
+    print(f"    /coords     {coords.shape}")
+    print(f"    /p99s       {np.array(p99s)}")
+    print(f"    /pixel_stds {pixel_stds}")
 
 
 # ── Per-sample pipeline ───────────────────────────────────────────────────────
@@ -457,44 +430,43 @@ def process_sample(
         )
 
     coords, patch_size, target_mag = load_trident_coords(coords_h5)
-    # Sort by (row, col) so consecutive patches share zarr chunks → better cache hit rate
-    coords = coords[np.lexsort((coords[:, 0], coords[:, 1]))]
     # Level-0 crop size: scale from target mag resolution to level-0 resolution
     patch_size_level0 = round(patch_size * (10.0 / target_mag) / MPP_HE)
 
     # 2. Open IF zarr (H&E and IF share the same coordinate space — no warp)
     arr, c_ax, h_ax, w_ax = open_zarr_level0(if_path)
 
-    # 3. p99s — needed for normalize_patch
+    # 3. p99s — needed for normalize_patch in __getitem__
+
     print(f"\n  Computing p99s ({min(args.max_patches, len(coords))} patches)…")
+
     try:
         p99s = load_display_p99s(sample)
-    except Exception:
+    except:
         p99s = compute_slide_p99s(
             arr, c_ax, h_ax, w_ax,
             channel_params, coords, patch_size_level0,
             af_raw_ch=ORION_AF_RAW_CH,
             max_patches=args.max_patches,
         )
-        save_p99s_txt(sample, p99s, channel_params)
 
-    # 4. Token-grid targets — (N, C, G, G) mean expression per token cell
-    print(f"\n  Computing {args.token_grid}×{args.token_grid} token targets ({len(coords)} patches)…")
-    targets = compute_token_grid_targets(
+
+    # 4. Pixel stds — used for 1/σ loss weights (must run after p99s)
+    print(f"\n  Computing pixel stds ({min(args.max_patches, len(coords))} patches)…")
+    pixel_stds = compute_pixel_stds(
         arr, c_ax, h_ax, w_ax,
         channel_params, coords, patch_size_level0,
         p99s=p99s,
         af_raw_ch=ORION_AF_RAW_CH,
-        token_grid=args.token_grid,
+        max_patches=args.max_patches,
     )
 
     # 5. Save HDF5
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     marker_names = [p[1] for p in channel_params]
     save_dataset(
-        out_path, coords, p99s, targets,
+        out_path, coords, p99s, pixel_stds,
         marker_names, patch_size, patch_size_level0, sample,
-        token_grid=args.token_grid,
     )
 
 
@@ -513,7 +485,7 @@ def main() -> None:
     parser.add_argument("--patch_size",   type=int,   default=224)
     parser.add_argument("--mag",          type=float, default=20)
     parser.add_argument("--overlap",      type=int,   default=0)
-    parser.add_argument("--min_tissue",   type=float, default=0.1)
+    parser.add_argument("--min_tissue",   type=float, default=0.0)
     parser.add_argument("--segmenter",    default="hest",
                         choices=["hest", "grandqc", "otsu"])
     parser.add_argument("--seg_thresh",   type=float, default=0.5)
@@ -521,10 +493,8 @@ def main() -> None:
     parser.add_argument("--job_dir",      default=str(JOB_DIR))
     parser.add_argument("--output_dir",   default=str(OUTPUT_DIR))
     parser.add_argument("--lambda_json",  default=str(LAMBDA_JSON))
-    parser.add_argument("--token_grid",   type=int,   default=16,
-                        help="Spatial grid size (must match FM patch tokens: UNI2=16)")
     parser.add_argument("--max_patches",  type=int,   default=2000,
-                        help="Patches sampled for p99 estimation")
+                        help="Patches sampled for p99 and pixel_std estimation")
     args = parser.parse_args()
 
     channels = list(ORION_CRC_CHANNELS)

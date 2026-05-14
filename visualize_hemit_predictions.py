@@ -24,8 +24,8 @@ from visualize_orion_predictions import (
 # Paths / constants
 # ---------------------------------------------------------------------------
 HEMIT_H5_DIR    = Path("hemit_patch_dataset")
-MODEL_DIR       = Path("outputs_orion_token_UNI2_finetuning")
-DEFAULT_OUT_DIR = Path("visualize_hemit_out/val")
+MODEL_DIR       = Path("outputs_orion_token_UNI2_finetuning_full")
+DEFAULT_OUT_DIR = Path("visualize_hemit_out/test")
 
 HEMIT_SOURCE_SIZE = 1024
 RESIZE_TO         = 896          # resize source to this before cropping
@@ -244,6 +244,8 @@ def assemble_slide_canvas(
     pred_canvas = np.zeros((H_canvas, W_canvas, n_sel), dtype=np.float32)
     tgt_canvas  = np.zeros((H_canvas, W_canvas, n_sel), dtype=np.float32)
 
+    # preds 4x3xGxG
+    # targets 4x3xGxG
     for (tile_row, tile_col), (patch_coords, he_tok, preds, tgts) in tile_data.items():
         # Top-left token of this tile's block in the slide canvas
         r_base = tile_row * G2
@@ -420,7 +422,7 @@ def main():
         description="HEMIT inference + slide-level visualisation "
                     "(ORION model, shared markers: CD3e & Pan-CK)."
     )
-    parser.add_argument("--split",     default="val",
+    parser.add_argument("--split",     default="test",
                         choices=["train", "val", "test"])
     parser.add_argument("--slides",    nargs="*", default=None,
                         help="Slide IDs to visualise, e.g. '[12146,53552]' "
