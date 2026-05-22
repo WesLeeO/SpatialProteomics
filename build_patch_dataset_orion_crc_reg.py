@@ -513,10 +513,10 @@ def main() -> None:
     parser.add_argument("--patch_size",   type=int,   default=224)
     parser.add_argument("--mag",          type=float, default=20)
     parser.add_argument("--overlap",      type=int,   default=0)
-    parser.add_argument("--min_tissue",   type=float, default=0.1)
+    parser.add_argument("--min_tissue",   type=float, default=0.25)
     parser.add_argument("--segmenter",    default="hest",
                         choices=["hest", "grandqc", "otsu"])
-    parser.add_argument("--seg_thresh",   type=float, default=0.5)
+    parser.add_argument("--seg_thresh",   type=float, default=0.5) # 0.3 for CRC16
     parser.add_argument("--gpu",          type=int,   default=1)
     parser.add_argument("--job_dir",      default=str(JOB_DIR))
     parser.add_argument("--output_dir",   default=str(OUTPUT_DIR))

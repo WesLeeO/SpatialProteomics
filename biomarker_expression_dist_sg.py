@@ -16,9 +16,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-DATASET_DIR = Path("singular_genomics")
-H5_FILES    = sorted(DATASET_DIR.glob("*_patch_dataset.h5"))
-OUTPUT_DIR  = Path("biomarker_stats_out/sg")
+DATASET_DIR  = Path("singular_genomics")
+CANCER_ONLY  = True   # match training config (SG_CANCER_ONLY)
+_all_files   = sorted(DATASET_DIR.glob("*_patch_dataset.h5"))
+H5_FILES     = [p for p in _all_files if not CANCER_ONLY or "cancer" in p.stem]
+OUTPUT_DIR   = Path("biomarker_stats/sg")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 N_BINS = 100
@@ -81,20 +83,29 @@ def main():
     for m_idx, arrs in token_vals.items():
         all_tokens[m_idx] = np.concatenate(arrs)
 
-    # ── Print aggregate statistics ────────────────────────────────────────────
-    print(f"\n{'Marker':<14} {'n_diseases':>10} {'n_tokens':>12} {'mean':>8} "
-          f"{'std':>8} {'median':>8} {'p5':>8} {'p95':>8} {'max':>8}")
-    print("-" * 102)
+    # ── Aggregate statistics + stats.txt ─────────────────────────────────────
+    hdr = (f"{'Idx':<4} {'Marker':<20} {'n_tokens':>12} {'mean':>8} {'std':>8} "
+           f"{'median':>8} {'p5':>8} {'p25':>8} {'p75':>8} {'p95':>8} "
+           f"{'min':>8} {'max':>8}")
+    sep = "-" * 112
+    print(f"\n{hdr}")
+    print(sep)
+    rows = []
     for m_idx, marker in enumerate(marker_names):
         if m_idx not in all_tokens:
-            print(f"{marker:<14} {'MISSING':>10}")
+            row = f"{m_idx:<4} {marker:<20} {'MISSING (invalid or not present)':>12}"
+            print(row); rows.append(row)
             continue
         v = all_tokens[m_idx]
         n_dis = int(presence_mat[:, m_idx].sum())
-        p5, p95 = np.percentile(v, [5, 95])
-        print(f"{marker:<14} {n_dis:>10} {len(v):>12,} {v.mean():>8.4f} "
-              f"{v.std():>8.4f} {np.median(v):>8.4f} {p5:>8.4f} {p95:>8.4f} "
-              f"{v.max():>8.4f}")
+        p5, p25, p75, p95 = np.percentile(v, [5, 25, 75, 95])
+        row = (f"{m_idx:<4} {marker:<20} {len(v):>12,} {v.mean():>8.4f} {v.std():>8.4f} "
+               f"{np.median(v):>8.4f} {p5:>8.4f} {p25:>8.4f} {p75:>8.4f} {p95:>8.4f} "
+               f"{v.min():>8.4f} {v.max():>8.4f}")
+        print(row); rows.append(row)
+    txt_path = OUTPUT_DIR / "stats.txt"
+    txt_path.write_text("\n".join([hdr, sep] + rows) + "\n")
+    print(f"Saved → {txt_path}")
 
     # ── Print per-disease means ───────────────────────────────────────────────
     print(f"\nPer-disease mean intensity (- = missing):")
