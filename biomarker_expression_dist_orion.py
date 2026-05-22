@@ -41,17 +41,25 @@ def main():
     # Concatenate across slides once
     all_tokens = {m: np.concatenate(arrs) for m, arrs in token_vals.items()}
 
-    # ── Print statistics ──────────────────────────────────────────────────────
-    print(f"\n{'Marker':<14} {'n_tokens':>12} {'mean':>8} {'std':>8} "
-          f"{'median':>8} {'p5':>8} {'p25':>8} {'p75':>8} {'p95':>8} "
-          f"{'min':>8} {'max':>8}")
-    print("-" * 108)
+    # ── Print & save statistics ───────────────────────────────────────────────
+    hdr = (f"{'Marker':<14} {'n_tokens':>12} {'mean':>8} {'std':>8} "
+           f"{'median':>8} {'p5':>8} {'p25':>8} {'p75':>8} {'p95':>8} "
+           f"{'min':>8} {'max':>8}")
+    sep = "-" * 108
+    print(f"\n{hdr}")
+    print(sep)
+    rows = []
     for m_idx, marker in enumerate(marker_names):
         v = all_tokens[m_idx]
         p5, p25, p75, p95 = np.percentile(v, [5, 25, 75, 95])
-        print(f"{marker:<14} {len(v):>12,} {v.mean():>8.4f} {v.std():>8.4f} "
-              f"{np.median(v):>8.4f} {p5:>8.4f} {p25:>8.4f} {p75:>8.4f} {p95:>8.4f} "
-              f"{v.min():>8.4f} {v.max():>8.4f}")
+        row = (f"{marker:<14} {len(v):>12,} {v.mean():>8.4f} {v.std():>8.4f} "
+               f"{np.median(v):>8.4f} {p5:>8.4f} {p25:>8.4f} {p75:>8.4f} {p95:>8.4f} "
+               f"{v.min():>8.4f} {v.max():>8.4f}")
+        print(row)
+        rows.append(row)
+    txt_path = OUTPUT_DIR / "stats.txt"
+    txt_path.write_text("\n".join([hdr, sep] + rows) + "\n")
+    print(f"Saved → {txt_path}")
 
     # ── Histograms ────────────────────────────────────────────────────────────
     ncols = 4

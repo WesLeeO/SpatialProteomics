@@ -1,17 +1,11 @@
-#!/usr/bin/env python3
-"""
-Pixel-level intensity histograms per biomarker across orion_crc_patch_dataset_reg.
-Each patch (N, C, 16, 16) contributes 256 pixel samples per channel.
-"""
-
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-DATASET_DIR = Path("/home/wesley/spatial_proteomics/hemit_patch_dataset")
-H5_FILES    = sorted(DATASET_DIR.glob("*.h5"))
-OUTPUT_DIR  = Path("/home/wesley/spatial_proteomics/biomarker_stats/hemit")
+DATASET_DIR = Path("/home/wesley/spatial_proteomics/jedi_patch_dataset")
+H5_FILES    = sorted(DATASET_DIR.glob("*_patch_dataset.h5"))
+OUTPUT_DIR  = Path("/home/wesley/spatial_proteomics/biomarker_stats/jedi")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 N_BINS = 100
