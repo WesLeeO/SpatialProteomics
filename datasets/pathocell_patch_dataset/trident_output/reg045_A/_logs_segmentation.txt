@@ -1,0 +1,1 @@
+reg045_A.tif: Tissue segmented.

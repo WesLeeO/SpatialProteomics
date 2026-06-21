@@ -1,0 +1,1 @@
+reg009_B.tif: Tissue segmented.

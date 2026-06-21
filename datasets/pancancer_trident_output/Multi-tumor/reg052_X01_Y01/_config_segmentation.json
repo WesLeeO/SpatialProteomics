@@ -1,0 +1,15 @@
+{
+    "job_dir": "pancancer_trident_output/Multi-tumor/reg052_X01_Y01",
+    "wsi_source": "pancancer_trident_output/Multi-tumor/reg052_X01_Y01",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "reg052_X01_Y01.tif"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:1"
+}

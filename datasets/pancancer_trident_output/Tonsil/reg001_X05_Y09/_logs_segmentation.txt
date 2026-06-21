@@ -1,0 +1,1 @@
+reg001_X05_Y09.tif: Tissue segmented.

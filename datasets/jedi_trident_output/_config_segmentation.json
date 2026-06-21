@@ -1,0 +1,15 @@
+{
+    "job_dir": "jedi_trident_output",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/JEDI_201207",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "JEDI20033.tif"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

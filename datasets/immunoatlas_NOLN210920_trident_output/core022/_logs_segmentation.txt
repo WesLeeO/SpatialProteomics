@@ -1,0 +1,1 @@
+core022.png: Tissue segmented.

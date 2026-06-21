@@ -1,0 +1,26 @@
+{
+    "job_dir": "immunoatlas_NOLN210920_trident_output/core027",
+    "wsi_source": "immunoatlas_70_png",
+    "wsi_ext": [
+        ".jpeg",
+        ".png",
+        ".jpg",
+        ".svs",
+        ".mrxs",
+        ".vms",
+        ".ndpi",
+        ".scn",
+        ".tif",
+        ".tiff",
+        ".vmu",
+        ".sdpc"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "core027.png"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

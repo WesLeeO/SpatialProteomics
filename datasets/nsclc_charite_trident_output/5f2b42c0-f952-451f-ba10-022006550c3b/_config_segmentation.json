@@ -1,0 +1,26 @@
+{
+    "job_dir": "nsclc_charite_trident_output/5f2b42c0-f952-451f-ba10-022006550c3b",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/nsclc_charite/extracted/spot_center_crops",
+    "wsi_ext": [
+        ".jpeg",
+        ".png",
+        ".jpg",
+        ".svs",
+        ".tif",
+        ".vmu",
+        ".ndpi",
+        ".tiff",
+        ".scn",
+        ".vms",
+        ".mrxs",
+        ".sdpc"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "5f2b42c0-f952-451f-ba10-022006550c3b_he.jpg"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

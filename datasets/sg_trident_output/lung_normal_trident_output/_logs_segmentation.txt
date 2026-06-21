@@ -1,0 +1,1 @@
+B01_HE.ome.tiff: Tissue segmented.

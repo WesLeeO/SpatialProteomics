@@ -1,0 +1,1 @@
+reg020_X01_Y01.tif: Tissue segmented.

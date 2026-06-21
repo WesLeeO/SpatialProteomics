@@ -1,0 +1,17 @@
+{
+    "job_dir": "orion_trident_output_reg/CRC24",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/ORION_CRC/CRC24",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "19510_C24_US_SCAN_OR_001__091904-registered.ome.tif"
+    ],
+    "target_magnification": 20.0,
+    "patch_size": 224,
+    "overlap": 0,
+    "saveto": "20.0x_224px_0px_overlap",
+    "visualize": true,
+    "min_tissue_proportion": 0.25
+}

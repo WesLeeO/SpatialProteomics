@@ -1,0 +1,26 @@
+{
+    "job_dir": "singular_genomics/kidney_cancer_trident_output",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/singular_genomics/kidney_cancer/g4x_viewer",
+    "wsi_ext": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".ndpi",
+        ".scn",
+        ".tiff",
+        ".vms",
+        ".tif",
+        ".svs",
+        ".mrxs",
+        ".vmu",
+        ".sdpc"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "C02_HE.ome.tiff"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

@@ -1,0 +1,1 @@
+reg001_A.tif: Coords generated

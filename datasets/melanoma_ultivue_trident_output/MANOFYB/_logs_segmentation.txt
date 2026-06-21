@@ -1,0 +1,1 @@
+MANOFYB_LS_4_BLOCK00_HE.ndpi: Tissue segmented.

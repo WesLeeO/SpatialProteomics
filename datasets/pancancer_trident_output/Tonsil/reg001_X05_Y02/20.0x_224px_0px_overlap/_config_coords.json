@@ -1,0 +1,17 @@
+{
+    "job_dir": "pancancer_trident_output/Tonsil/reg001_X05_Y02",
+    "wsi_source": "pancancer_trident_output/Tonsil/reg001_X05_Y02",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "reg001_X05_Y02.tif"
+    ],
+    "target_magnification": 20.0,
+    "patch_size": 224,
+    "overlap": 0,
+    "saveto": "20.0x_224px_0px_overlap",
+    "visualize": true,
+    "min_tissue_proportion": 0.1
+}

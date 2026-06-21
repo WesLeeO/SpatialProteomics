@@ -1,0 +1,15 @@
+{
+    "job_dir": "pathocell_patch_dataset/trident_output/reg014_B",
+    "wsi_source": "pathocell_patch_dataset/trident_output/reg014_B/tmp_he",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "reg014_B.tif"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

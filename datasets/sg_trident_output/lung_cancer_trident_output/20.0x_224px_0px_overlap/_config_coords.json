@@ -1,0 +1,28 @@
+{
+    "job_dir": "singular_genomics/lung_cancer_trident_output",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/singular_genomics/lung_cancer/g4x_viewer",
+    "wsi_ext": [
+        ".jpeg",
+        ".jpg",
+        ".png",
+        ".tiff",
+        ".vmu",
+        ".ndpi",
+        ".mrxs",
+        ".svs",
+        ".tif",
+        ".vms",
+        ".scn",
+        ".sdpc"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "C01_HE.ome.tiff"
+    ],
+    "target_magnification": 20.0,
+    "patch_size": 224,
+    "overlap": 0,
+    "saveto": "20.0x_224px_0px_overlap",
+    "visualize": true,
+    "min_tissue_proportion": 0.0
+}

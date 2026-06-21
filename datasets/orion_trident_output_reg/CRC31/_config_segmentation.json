@@ -1,0 +1,15 @@
+{
+    "job_dir": "orion_trident_output_reg/CRC31",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/ORION_CRC/CRC31",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "19510_C31_US_SCAN_OR_001__160203-registered.ome.tif"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:1"
+}

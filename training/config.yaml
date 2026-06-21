@@ -1,0 +1,96 @@
+# ── Orion token-regression training config ──────────────────────────────────────
+# Single source of truth for training_orion_reg.py. Override per-run with
+#   --config other.yaml   or   --set a.b.c=value   (value parsed as YAML).
+# compare_models.py deep-merges per-arm override dicts onto this base.
+
+model:
+  name: UNI2
+  token_grid: 16
+  num_outputs: 16
+
+data:
+  h5_dir: orion_crcv2_patch_dataset
+  tiff_dir: /mnt/ssd/virtual_proteomics/data/ORION_CRC
+  split_mode: miphei            # "miphei" (fixed slide lists) | "random" (seeded)
+  val_slides:  [CRC19, CRC30]   # MIPHEI val set
+  test_slides: [CRC11, CRC02]   # MIPHEI test set
+  val_frac:  0.15               # only used when split_mode == random
+  test_frac: 0.15
+  output_dir: null              # null → auto-named from the tags below
+
+# ── Encoder finetuning (mutually exclusive mode). Non-neighbour model only;
+#    neighbour model keeps UNI2 frozen regardless. ─────────────────────────────────
+finetune:
+  mode: lora                    # "lora" | "unfreeze" | "none"
+  unfreeze_last_n: 4            # UNI2 blocks to unfreeze in phase 2 (mode=unfreeze)
+  grad_checkpoint: false         # recompute activations in backward (needed for all-layer LoRA)
+  lora:
+    last_n: 8                  # blocks adapted from the top (>=depth → ALL 24 blocks)
+    rank: 16
+    alpha: 32                   # alpha/rank = 2
+    dropout: 0.05
+    suffixes: [attn.qkv, attn.proj, mlp.fc1, mlp.fc2]   # Linears per block to adapt
+    lr_scale: 1.0               # encoder-phase LR multiplier for adapters
+    train_norms: true           # also train LayerNorms + LayerScales of the adapted blocks
+                                # (removes the ls-gating bottleneck LoRA alone can't touch)
+
+# ── Neighbourhood context model ─────────────────────────────────────────────────
+neighbour:
+  use: false
+  arch: cls                     # "cls" (NeighbourCLSModel) | "grid" (NeighbourhoodSpatialModel)
+  batch_size: 1024
+  mask_neighbours: false        # true → neighbours masked out of attention (ablation A)
+
+# ── Loss ────────────────────────────────────────────────────────────────────────
+loss:
+  # ACTIVE two-term per-marker loss: L_fg + lambda_bg * L_bg. lambda_bg is the single
+  # knob; bg loss ~7% of fg, sweep {5,10,15}.
+  lambda_bg: 8.0
+  # foreground definition for the per-marker mask:
+  #   zero       = target > 0  (bg = true zeros only → ×λ drives them to 0 = darker bg;
+  #                valid because AF-subtraction leaves 92-99% of tokens exactly 0)
+  #   token_mean = target > its own global token-mean (legacy)
+  fg_mode: zero
+  bio:
+    lambda_bio: 0               # max weight of bio loss relative to MSE
+    warmup_steps: 500
+  weighted_mse:
+    base: 5                     # alpha for median-std marker; others scale inversely with std
+    max: 20                     # cap to avoid instability on very sparse markers
+  legacy:                       # kept for old-run reproducibility (superseded schemes)
+    bg_weight: 0.2              # old per-token any-marker weighted MSE
+    balance_strength: 1.0       # old per-marker prevalence-balanced weighting
+
+# ── Training ─────────────────────────────────────────────────────────────────────
+train:
+  batch_size: 1024
+  num_epochs: 10
+  lr: 3.0e-4
+  weight_decay: 0.05
+  num_workers: 4
+  seed: 42
+  oversample: false             # up-weight hard-marker patches (count-based, cap 3)
+  phase1_epochs: 1              # head-only epochs (encoder frozen) before phase 2
+  warmup_steps: 500             # linear warmup steps for encoder LR at phase-2 start
+  # checkpoint selection → best_model.pt:
+  #   best       = epoch with max mean val Pearson (legacy; gambles on a noisy single epoch)
+  #   last       = final epoch (ok once val has plateaued; warns if val still declining)
+  #   swa_lastk  = average weights of the last `select_window` epochs (robust; recommended)
+  select: best
+  select_window: 5              # k epochs averaged for swa_lastk
+
+# ── Feature Distribution Smoothing ──────────────────────────────────────────────
+fds:
+  bucket_num: 50
+  bucket_start: 0
+  start_update: 0
+  start_smooth: 1
+  kernel: gaussian
+  ks: 5
+  sigma: 2
+  momentum: 0.9
+
+# ── Experimental (off by default) ───────────────────────────────────────────────
+experimental:
+  use_conch_refinement: false   # per-marker patch-level cosine-similarity bias on UNI2
+  cls_film: false               # FiLM-gate per-token features from the patch CLS token

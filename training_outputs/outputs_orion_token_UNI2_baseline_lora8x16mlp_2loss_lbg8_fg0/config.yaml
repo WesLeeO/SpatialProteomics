@@ -1,0 +1,74 @@
+model:
+  name: UNI2
+  token_grid: 16
+  num_outputs: 16
+data:
+  h5_dir: orion_crcv2_patch_dataset
+  tiff_dir: /mnt/ssd/virtual_proteomics/data/ORION_CRC
+  split_mode: miphei
+  val_slides:
+  - CRC19
+  - CRC30
+  test_slides:
+  - CRC11
+  - CRC02
+  val_frac: 0.15
+  test_frac: 0.15
+  output_dir: null
+finetune:
+  mode: lora
+  unfreeze_last_n: 4
+  grad_checkpoint: false
+  lora:
+    last_n: 8
+    rank: 16
+    alpha: 32
+    dropout: 0.05
+    suffixes:
+    - attn.qkv
+    - attn.proj
+    - mlp.fc1
+    - mlp.fc2
+    lr_scale: 1.0
+    train_norms: true
+neighbour:
+  use: false
+  arch: cls
+  batch_size: 1024
+  mask_neighbours: false
+loss:
+  lambda_bg: 8.0
+  fg_mode: zero
+  bio:
+    lambda_bio: 0
+    warmup_steps: 500
+  weighted_mse:
+    base: 5
+    max: 20
+  legacy:
+    bg_weight: 0.2
+    balance_strength: 1.0
+train:
+  batch_size: 256
+  num_epochs: 10
+  lr: 0.0001
+  weight_decay: 0.05
+  num_workers: 4
+  seed: 42
+  oversample: false
+  phase1_epochs: 1
+  warmup_steps: 500
+  select: best
+  select_window: 5
+fds:
+  bucket_num: 50
+  bucket_start: 0
+  start_update: 0
+  start_smooth: 1
+  kernel: gaussian
+  ks: 5
+  sigma: 2
+  momentum: 0.9
+experimental:
+  use_conch_refinement: false
+  cls_film: false

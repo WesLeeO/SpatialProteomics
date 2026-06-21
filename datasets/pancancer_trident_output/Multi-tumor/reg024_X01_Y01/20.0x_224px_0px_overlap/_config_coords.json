@@ -1,0 +1,17 @@
+{
+    "job_dir": "pancancer_trident_output/Multi-tumor/reg024_X01_Y01",
+    "wsi_source": "pancancer_trident_output/Multi-tumor/reg024_X01_Y01",
+    "wsi_ext": [
+        ".tif"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "reg024_X01_Y01.tif"
+    ],
+    "target_magnification": 20.0,
+    "patch_size": 224,
+    "overlap": 0,
+    "saveto": "20.0x_224px_0px_overlap",
+    "visualize": true,
+    "min_tissue_proportion": 0.1
+}

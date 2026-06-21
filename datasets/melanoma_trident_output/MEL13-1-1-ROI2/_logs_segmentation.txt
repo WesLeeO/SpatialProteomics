@@ -1,0 +1,1 @@
+MEL13-1-0-HE-ROI2_rot90cw.tif: Tissue segmented.

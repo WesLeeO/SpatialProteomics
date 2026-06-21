@@ -1,0 +1,1 @@
+MAKYGIW_LS_7_BLOCK00_HE.ndpi: Tissue segmented.

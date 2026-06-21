@@ -1,0 +1,159 @@
+{
+  "NORM@fg99_permarkerbg_permarkercap": {
+    "samples": [
+      "MACEGEJ",
+      "MAHEFOG",
+      "MAJOFIJ",
+      "MAKYGIW",
+      "MANOFYB",
+      "MELIPIT",
+      "MIDEKOG",
+      "MIDOBOL",
+      "MISYPUP",
+      "MUDUKEF"
+    ],
+    "fg_pct": 99.0,
+    "bg_frac": {
+      "PD-L1": 0.1,
+      "CD68": 0.1,
+      "CD8a": 3.0,
+      "PD-1": 3.0,
+      "FoXP3": 0.7,
+      "SOX10": 0.1,
+      "CD3": 0.7,
+      "CD4": 0.8
+    },
+    "hi_cap": {
+      "PD-L1": null,
+      "CD68": null,
+      "CD8a": 99.999,
+      "PD-1": 99.999,
+      "FoXP3": null,
+      "SOX10": null,
+      "CD3": null,
+      "CD4": null
+    },
+    "markers": {
+      "PD-L1": {
+        "max": 2336.0,
+        "bg": {
+          "MACEGEJ": 101.0,
+          "MAHEFOG": 108.0,
+          "MAJOFIJ": 125.0,
+          "MAKYGIW": 107.0,
+          "MANOFYB": 89.0,
+          "MELIPIT": 108.0,
+          "MIDEKOG": 97.0,
+          "MIDOBOL": 124.0,
+          "MISYPUP": 96.0,
+          "MUDUKEF": 158.0
+        }
+      },
+      "CD68": {
+        "max": 1613.0,
+        "bg": {
+          "MACEGEJ": 118.0,
+          "MAHEFOG": 109.0,
+          "MAJOFIJ": 127.0,
+          "MAKYGIW": 109.0,
+          "MANOFYB": 98.0,
+          "MELIPIT": 148.0,
+          "MIDEKOG": 123.0,
+          "MIDOBOL": 119.0,
+          "MISYPUP": 104.0,
+          "MUDUKEF": 122.0
+        }
+      },
+      "CD8a": {
+        "max": 8018.0,
+        "bg": {
+          "MACEGEJ": 856.0,
+          "MAHEFOG": 1189.0,
+          "MAJOFIJ": 1077.0,
+          "MAKYGIW": 753.0,
+          "MANOFYB": 823.0,
+          "MELIPIT": 739.0,
+          "MIDEKOG": 973.0,
+          "MIDOBOL": 658.0,
+          "MISYPUP": 529.0,
+          "MUDUKEF": 766.0
+        }
+      },
+      "PD-1": {
+        "max": 1375.0,
+        "bg": {
+          "MACEGEJ": 168.0,
+          "MAHEFOG": 192.0,
+          "MAJOFIJ": 192.0,
+          "MAKYGIW": 144.0,
+          "MANOFYB": 150.0,
+          "MELIPIT": 138.0,
+          "MIDEKOG": 153.0,
+          "MIDOBOL": 120.0,
+          "MISYPUP": 114.0,
+          "MUDUKEF": 132.0
+        }
+      },
+      "FoXP3": {
+        "max": 3223.0,
+        "bg": {
+          "MACEGEJ": 534.0,
+          "MAHEFOG": 413.0,
+          "MAJOFIJ": 554.0,
+          "MAKYGIW": 555.0,
+          "MANOFYB": 247.0,
+          "MELIPIT": 707.0,
+          "MIDEKOG": 332.0,
+          "MIDOBOL": 402.0,
+          "MISYPUP": 411.0,
+          "MUDUKEF": 706.0
+        }
+      },
+      "SOX10": {
+        "max": 3647.0,
+        "bg": {
+          "MACEGEJ": 116.0,
+          "MAHEFOG": 112.0,
+          "MAJOFIJ": 0.0,
+          "MAKYGIW": 139.0,
+          "MANOFYB": 98.0,
+          "MELIPIT": 196.0,
+          "MIDEKOG": 109.0,
+          "MIDOBOL": 108.0,
+          "MISYPUP": 135.0,
+          "MUDUKEF": 163.0
+        }
+      },
+      "CD3": {
+        "max": 12445.0,
+        "bg": {
+          "MACEGEJ": 928.0,
+          "MAHEFOG": 1950.0,
+          "MAJOFIJ": 1245.0,
+          "MAKYGIW": 765.0,
+          "MANOFYB": 90.0,
+          "MELIPIT": 1005.0,
+          "MIDEKOG": 862.0,
+          "MIDOBOL": 205.0,
+          "MISYPUP": 916.0,
+          "MUDUKEF": 1153.0
+        }
+      },
+      "CD4": {
+        "max": 9976.0,
+        "bg": {
+          "MACEGEJ": 906.0,
+          "MAHEFOG": 550.0,
+          "MAJOFIJ": 252.0,
+          "MAKYGIW": 769.0,
+          "MANOFYB": 96.0,
+          "MELIPIT": 1130.0,
+          "MIDEKOG": 699.0,
+          "MIDOBOL": 705.0,
+          "MISYPUP": 955.0,
+          "MUDUKEF": 1033.0
+        }
+      }
+    }
+  }
+}

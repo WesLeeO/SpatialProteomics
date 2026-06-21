@@ -1,0 +1,15 @@
+{
+    "job_dir": "melanoma_ultivue_trident_output/MIDEKOG",
+    "wsi_source": "/mnt/ssd1/virtual_proteomics/data/melanoma2/MIDEKOG/HE",
+    "wsi_ext": [
+        ".ndpi"
+    ],
+    "skip_errors": false,
+    "wsi_rel_paths": [
+        "MIDEKOG_LS_4_BLOCK00_HE.ndpi"
+    ],
+    "seg_mag": 10,
+    "holes_are_tissue": true,
+    "batch_size": 64,
+    "device": "cuda:0"
+}

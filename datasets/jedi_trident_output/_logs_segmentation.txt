@@ -1,0 +1,1 @@
+JEDI20033.tif: Tissue segmented.

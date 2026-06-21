@@ -1,0 +1,602 @@
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC02-HE.ome.tif
+Loading CRC02 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 54363, 82230)  (13.41 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC03-HE.ome.tif
+Loading CRC03 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 43992, 77265)  (10.20 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC04-HE.ome.tif
+Loading CRC04 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 52245, 77114)  (12.09 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC05-HE.ome.tif
+Loading CRC05 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 39850, 84675)  (10.12 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC06-HE.ome.tif
+Loading CRC06 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 58476, 72220)  (12.67 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC07-HE.ome.tif
+Loading CRC07 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 45947, 62182)  (8.57 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC08-HE.ome.tif
+Loading CRC08 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 56320, 84992)  (14.36 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC09-HE.ome.tif
+Loading CRC09 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 45944, 72210)  (9.95 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC10-HE.ome.tif
+Loading CRC10 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 65024, 79872)  (15.58 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC11-HE.ome.tif
+Loading CRC11 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 48128, 74752)  (10.79 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC12-HE.ome.tif
+Loading CRC12 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 52301, 74705)  (11.72 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC13-HE.ome.tif
+Loading CRC13 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 52196, 37455)  (5.87 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC14-HE.ome.tif
+Loading CRC14 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 48109, 72298)  (10.43 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC15-HE.ome.tif
+Loading CRC15 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 45970, 72275)  (9.97 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC16-HE.ome.tif
+Loading CRC16 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 41794, 97089)  (12.17 GB)
+/mnt/ssd1/virtual_proteomics/data/ORION_CRC/data/CRC17-HE.ome.tif
+Loading CRC17 into RAM ... (crop=448px → resize to 224px)
+  Loaded: (3, 50176, 87040)  (13.10 GB)
+Dataset ready: 345686 patches across 16 slide(s).
+Train: 276549 | Val: 69137 | Device: cuda
+Start training for 10 epochs...
+Epoch 1:
+Training...
+Validating...
+Epoch   1/10 | Train  loss: 0.0944  pearson: 0.1626 spearman: 0.1825 | Val    loss: 0.0223  pearson: 0.5617 spearman: 0.5763 
+    Hoechst               val pearson: 0.6457 val spearman: 0.7041
+    CD31                  val pearson: 0.3250 val spearman: 0.2969
+    CD45                  val pearson: 0.5122 val spearman: 0.4132
+    CD68                  val pearson: 0.0309 val spearman: 0.0094
+    CD4                   val pearson: 0.7207 val spearman: 0.7481
+    FOXP3                 val pearson: 0.1422 val spearman: 0.2761
+    CD8a                  val pearson: 0.6229 val spearman: 0.6107
+    CD45RO                val pearson: 0.4532 val spearman: 0.5318
+    CD20                  val pearson: 0.6851 val spearman: 0.6737
+    PD-L1                 val pearson: 0.7914 val spearman: 0.7672
+    CD3e                  val pearson: 0.6168 val spearman: 0.6706
+    CD163                 val pearson: 0.4785 val spearman: 0.5617
+    E-Cadherin            val pearson: 0.7703 val spearman: 0.7366
+    Ki-67                 val pearson: 0.6753 val spearman: 0.6881
+    Pan-CK                val pearson: 0.7755 val spearman: 0.7795
+    SMA                   val pearson: 0.7422 val spearman: 0.7537
+           -> best model saved (val r=0.5617)
+Epoch 2:
+Training...
+Validating...
+Epoch   2/10 | Train  loss: 0.0335  pearson: 0.4320 spearman: 0.4311 | Val    loss: 0.0169  pearson: 0.6627 spearman: 0.6631 
+    Hoechst               val pearson: 0.7474 val spearman: 0.7895
+    CD31                  val pearson: 0.5117 val spearman: 0.3807
+    CD45                  val pearson: 0.7374 val spearman: 0.6118
+    CD68                  val pearson: 0.0801 val spearman: 0.1224
+    CD4                   val pearson: 0.7954 val spearman: 0.8163
+    FOXP3                 val pearson: 0.2002 val spearman: 0.3139
+    CD8a                  val pearson: 0.7111 val spearman: 0.7017
+    CD45RO                val pearson: 0.6497 val spearman: 0.6760
+    CD20                  val pearson: 0.7561 val spearman: 0.7412
+    PD-L1                 val pearson: 0.8533 val spearman: 0.8155
+    CD3e                  val pearson: 0.7142 val spearman: 0.7546
+    CD163                 val pearson: 0.6148 val spearman: 0.7098
+    E-Cadherin            val pearson: 0.8214 val spearman: 0.7876
+    Ki-67                 val pearson: 0.7603 val spearman: 0.7566
+    Pan-CK                val pearson: 0.8409 val spearman: 0.8154
+    SMA                   val pearson: 0.8099 val spearman: 0.8169
+           -> best model saved (val r=0.6627)
+Epoch 3:
+Training...
+Validating...
+Epoch   3/10 | Train  loss: 0.0263  pearson: 0.5122 spearman: 0.4989 | Val    loss: 0.0143  pearson: 0.7019 spearman: 0.6943 
+    Hoechst               val pearson: 0.7903 val spearman: 0.8111
+    CD31                  val pearson: 0.5713 val spearman: 0.4110
+    CD45                  val pearson: 0.7976 val spearman: 0.6313
+    CD68                  val pearson: 0.1131 val spearman: 0.1856
+    CD4                   val pearson: 0.8227 val spearman: 0.8407
+    FOXP3                 val pearson: 0.2448 val spearman: 0.3588
+    CD8a                  val pearson: 0.7497 val spearman: 0.7448
+    CD45RO                val pearson: 0.7130 val spearman: 0.7222
+    CD20                  val pearson: 0.7928 val spearman: 0.7790
+    PD-L1                 val pearson: 0.8828 val spearman: 0.8402
+    CD3e                  val pearson: 0.7514 val spearman: 0.7781
+    CD163                 val pearson: 0.6617 val spearman: 0.7434
+    E-Cadherin            val pearson: 0.8437 val spearman: 0.8221
+    Ki-67                 val pearson: 0.8050 val spearman: 0.7890
+    Pan-CK                val pearson: 0.8595 val spearman: 0.8309
+    SMA                   val pearson: 0.8309 val spearman: 0.8203
+           -> best model saved (val r=0.7019)
+Epoch 4:
+Training...
+Validating...
+Epoch   4/10 | Train  loss: 0.0228  pearson: 0.5551 spearman: 0.5327 | Val    loss: 0.0130  pearson: 0.7235 spearman: 0.7068 
+    Hoechst               val pearson: 0.8092 val spearman: 0.8230
+    CD31                  val pearson: 0.6122 val spearman: 0.4445
+    CD45                  val pearson: 0.8229 val spearman: 0.6492
+    CD68                  val pearson: 0.1148 val spearman: 0.1544
+    CD4                   val pearson: 0.8390 val spearman: 0.8561
+    FOXP3                 val pearson: 0.2767 val spearman: 0.3436
+    CD8a                  val pearson: 0.7751 val spearman: 0.7691
+    CD45RO                val pearson: 0.7426 val spearman: 0.7355
+    CD20                  val pearson: 0.8176 val spearman: 0.8054
+    PD-L1                 val pearson: 0.8994 val spearman: 0.8532
+    CD3e                  val pearson: 0.7749 val spearman: 0.7932
+    CD163                 val pearson: 0.6862 val spearman: 0.7676
+    E-Cadherin            val pearson: 0.8570 val spearman: 0.8356
+    Ki-67                 val pearson: 0.8333 val spearman: 0.8079
+    Pan-CK                val pearson: 0.8689 val spearman: 0.8275
+    SMA                   val pearson: 0.8467 val spearman: 0.8432
+           -> best model saved (val r=0.7235)
+Epoch 5:
+Training...
+Validating...
+Epoch   5/10 | Train  loss: 0.0209  pearson: 0.5805 spearman: 0.5524 | Val    loss: 0.0121  pearson: 0.7380 spearman: 0.7181 
+    Hoechst               val pearson: 0.8196 val spearman: 0.8324
+    CD31                  val pearson: 0.6379 val spearman: 0.4561
+    CD45                  val pearson: 0.8339 val spearman: 0.6700
+    CD68                  val pearson: 0.1278 val spearman: 0.1815
+    CD4                   val pearson: 0.8499 val spearman: 0.8663
+    FOXP3                 val pearson: 0.2970 val spearman: 0.3474
+    CD8a                  val pearson: 0.7926 val spearman: 0.7873
+    CD45RO                val pearson: 0.7618 val spearman: 0.7381
+    CD20                  val pearson: 0.8345 val spearman: 0.8213
+    PD-L1                 val pearson: 0.9110 val spearman: 0.8621
+    CD3e                  val pearson: 0.7909 val spearman: 0.7999
+    CD163                 val pearson: 0.7017 val spearman: 0.7781
+    E-Cadherin            val pearson: 0.8636 val spearman: 0.8430
+    Ki-67                 val pearson: 0.8520 val spearman: 0.8277
+    Pan-CK                val pearson: 0.8772 val spearman: 0.8313
+    SMA                   val pearson: 0.8559 val spearman: 0.8474
+           -> best model saved (val r=0.7380)
+Epoch 6:
+Training...
+Validating...
+Epoch   6/10 | Train  loss: 0.0194  pearson: 0.6000 spearman: 0.5685 | Val    loss: 0.0116  pearson: 0.7477 spearman: 0.7296 
+    Hoechst               val pearson: 0.8300 val spearman: 0.8412
+    CD31                  val pearson: 0.6358 val spearman: 0.4698
+    CD45                  val pearson: 0.8410 val spearman: 0.6746
+    CD68                  val pearson: 0.1381 val spearman: 0.2207
+    CD4                   val pearson: 0.8588 val spearman: 0.8748
+    FOXP3                 val pearson: 0.3116 val spearman: 0.3631
+    CD8a                  val pearson: 0.8074 val spearman: 0.8041
+    CD45RO                val pearson: 0.7782 val spearman: 0.7559
+    CD20                  val pearson: 0.8470 val spearman: 0.8351
+    PD-L1                 val pearson: 0.9186 val spearman: 0.8706
+    CD3e                  val pearson: 0.8037 val spearman: 0.8117
+    CD163                 val pearson: 0.7125 val spearman: 0.7811
+    E-Cadherin            val pearson: 0.8695 val spearman: 0.8515
+    Ki-67                 val pearson: 0.8650 val spearman: 0.8417
+    Pan-CK                val pearson: 0.8836 val spearman: 0.8256
+    SMA                   val pearson: 0.8624 val spearman: 0.8525
+           -> best model saved (val r=0.7477)
+Epoch 7:
+Training...
+Validating...
+Epoch   7/10 | Train  loss: 0.0182  pearson: 0.6152 spearman: 0.5812 | Val    loss: 0.0109  pearson: 0.7544 spearman: 0.7385 
+    Hoechst               val pearson: 0.8376 val spearman: 0.8568
+    CD31                  val pearson: 0.6452 val spearman: 0.4673
+    CD45                  val pearson: 0.8436 val spearman: 0.6637
+    CD68                  val pearson: 0.1433 val spearman: 0.2397
+    CD4                   val pearson: 0.8649 val spearman: 0.8810
+    FOXP3                 val pearson: 0.3151 val spearman: 0.3848
+    CD8a                  val pearson: 0.8185 val spearman: 0.8150
+    CD45RO                val pearson: 0.7886 val spearman: 0.7725
+    CD20                  val pearson: 0.8555 val spearman: 0.8466
+    PD-L1                 val pearson: 0.9245 val spearman: 0.8758
+    CD3e                  val pearson: 0.8117 val spearman: 0.8228
+    CD163                 val pearson: 0.7197 val spearman: 0.7828
+    E-Cadherin            val pearson: 0.8730 val spearman: 0.8540
+    Ki-67                 val pearson: 0.8728 val spearman: 0.8550
+    Pan-CK                val pearson: 0.8886 val spearman: 0.8413
+    SMA                   val pearson: 0.8673 val spearman: 0.8561
+           -> best model saved (val r=0.7544)
+Epoch 8:
+Training...
+Validating...
+Epoch   8/10 | Train  loss: 0.0173  pearson: 0.6281 spearman: 0.5912 | Val    loss: 0.0104  pearson: 0.7652 spearman: 0.7557 
+    Hoechst               val pearson: 0.8441 val spearman: 0.8602
+    CD31                  val pearson: 0.6646 val spearman: 0.5131
+    CD45                  val pearson: 0.8532 val spearman: 0.7165
+    CD68                  val pearson: 0.1793 val spearman: 0.3398
+    CD4                   val pearson: 0.8705 val spearman: 0.8865
+    FOXP3                 val pearson: 0.3322 val spearman: 0.3647
+    CD8a                  val pearson: 0.8294 val spearman: 0.8269
+    CD45RO                val pearson: 0.8003 val spearman: 0.7803
+    CD20                  val pearson: 0.8642 val spearman: 0.8548
+    PD-L1                 val pearson: 0.9293 val spearman: 0.8827
+    CD3e                  val pearson: 0.8216 val spearman: 0.8309
+    CD163                 val pearson: 0.7285 val spearman: 0.7941
+    E-Cadherin            val pearson: 0.8776 val spearman: 0.8611
+    Ki-67                 val pearson: 0.8817 val spearman: 0.8637
+    Pan-CK                val pearson: 0.8938 val spearman: 0.8501
+    SMA                   val pearson: 0.8731 val spearman: 0.8650
+           -> best model saved (val r=0.7652)
+Epoch 9:
+Training...
+Validating...
+Epoch   9/10 | Train  loss: 0.0165  pearson: 0.6388 spearman: 0.6002 | Val    loss: 0.0104  pearson: 0.7692 spearman: 0.7563 
+    Hoechst               val pearson: 0.8483 val spearman: 0.8632
+    CD31                  val pearson: 0.6580 val spearman: 0.4925
+    CD45                  val pearson: 0.8552 val spearman: 0.6956
+    CD68                  val pearson: 0.1873 val spearman: 0.3050
+    CD4                   val pearson: 0.8749 val spearman: 0.8902
+    FOXP3                 val pearson: 0.3419 val spearman: 0.4251
+    CD8a                  val pearson: 0.8377 val spearman: 0.8372
+    CD45RO                val pearson: 0.8052 val spearman: 0.7844
+    CD20                  val pearson: 0.8699 val spearman: 0.8606
+    PD-L1                 val pearson: 0.9331 val spearman: 0.8844
+    CD3e                  val pearson: 0.8265 val spearman: 0.8339
+    CD163                 val pearson: 0.7318 val spearman: 0.7932
+    E-Cadherin            val pearson: 0.8804 val spearman: 0.8589
+    Ki-67                 val pearson: 0.8865 val spearman: 0.8684
+    Pan-CK                val pearson: 0.8954 val spearman: 0.8479
+    SMA                   val pearson: 0.8752 val spearman: 0.8599
+           -> best model saved (val r=0.7692)
+Epoch 10:
+Training...
+Validating...
+Epoch  10/10 | Train  loss: 0.0158  pearson: 0.6495 spearman: 0.6081 | Val    loss: 0.0099  pearson: 0.7737 spearman: 0.7465 
+    Hoechst               val pearson: 0.8524 val spearman: 0.8608
+    CD31                  val pearson: 0.6758 val spearman: 0.4799
+    CD45                  val pearson: 0.8602 val spearman: 0.7071
+    CD68                  val pearson: 0.1470 val spearman: 0.2032
+    CD4                   val pearson: 0.8798 val spearman: 0.8950
+    FOXP3                 val pearson: 0.3647 val spearman: 0.3565
+    CD8a                  val pearson: 0.8440 val spearman: 0.8397
+    CD45RO                val pearson: 0.8146 val spearman: 0.7834
+    CD20                  val pearson: 0.8757 val spearman: 0.8656
+    PD-L1                 val pearson: 0.9365 val spearman: 0.8876
+    CD3e                  val pearson: 0.8333 val spearman: 0.8376
+    CD163                 val pearson: 0.7404 val spearman: 0.7985
+    E-Cadherin            val pearson: 0.8849 val spearman: 0.8650
+    Ki-67                 val pearson: 0.8914 val spearman: 0.8685
+    Pan-CK                val pearson: 0.8993 val spearman: 0.8277
+    SMA                   val pearson: 0.8796 val spearman: 0.8672
+           -> best model saved (val r=0.7737)
+
+Done. Best mean val Pearson: 0.7737
+
+Canonical marker set (18): ['aSMA', 'ATPase', 'CD3', 'CD4', 'CD8', 'CD11c', 'CD20', 'CD31', 'CD45', 'CD45RA', 'CD68', 'FOXP3', 'HLA-DR', 'Isotype', 'KI67', 'PanCK', 'PD1', 'PDL1']
+Loading breast_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['CD45RA']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading breast_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading kidney_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading kidney_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading lung_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading lung_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading tonsil_rep1 into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Dataset ready: 15404 patches across 7 slide(s).
+
+  Shared markers (9): ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+
+============================================================
+  breast_cancer  (1797 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.1537   Mean Spearman: 0.1355
+============================================================
+    CD3e                  pearson: -0.2038  spearman: -0.2436
+    CD4                   pearson: 0.1745  spearman: 0.1537
+    CD8a                  pearson: -0.0188  spearman: -0.0829
+    CD20                  pearson: 0.2856  spearman: 0.2620
+    CD31                  pearson: 0.0492  spearman: 0.0712
+    CD68                  pearson: 0.0940  spearman: 0.0879
+    Ki-67                 pearson: 0.3918  spearman: 0.4388
+    Pan-CK                pearson: 0.4762  spearman: 0.4295
+    SMA                   pearson: 0.1346  spearman: 0.1026
+
+============================================================
+  breast_normal  (2124 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.1670   Mean Spearman: 0.1371
+============================================================
+    CD3e                  pearson: 0.1510  spearman: 0.1180
+    CD4                   pearson: 0.1923  spearman: 0.0480
+    CD8a                  pearson: 0.0771  spearman: 0.1024
+    CD20                  pearson: 0.2595  spearman: 0.2577
+    CD31                  pearson: 0.3556  spearman: 0.2996
+    CD68                  pearson: 0.2161  spearman: 0.1191
+    Ki-67                 pearson: -0.1577  spearman: -0.1575
+    Pan-CK                pearson: 0.2774  spearman: 0.2593
+    SMA                   pearson: 0.1322  spearman: 0.1877
+
+============================================================
+  kidney_cancer  (2356 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.2012   Mean Spearman: 0.1365
+============================================================
+    CD3e                  pearson: 0.0547  spearman: 0.0718
+    CD4                   pearson: 0.3660  spearman: 0.2678
+    CD8a                  pearson: 0.1804  spearman: 0.1558
+    CD20                  pearson: 0.2148  spearman: 0.1260
+    CD31                  pearson: 0.2533  spearman: 0.0674
+    CD68                  pearson: 0.2722  spearman: 0.2650
+    Ki-67                 pearson: -0.0574  spearman: -0.0322
+    Pan-CK                pearson: 0.5318  spearman: 0.4360
+    SMA                   pearson: -0.0049  spearman: -0.1295
+
+============================================================
+  kidney_normal  (2254 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.0463   Mean Spearman: 0.0363
+============================================================
+    CD3e                  pearson: -0.0246  spearman: -0.0128
+    CD4                   pearson: -0.0207  spearman: -0.0762
+    CD8a                  pearson: 0.1356  spearman: 0.1830
+    CD20                  pearson: 0.2392  spearman: 0.1716
+    CD31                  pearson: -0.0623  spearman: -0.1558
+    CD68                  pearson: -0.1858  spearman: -0.1212
+    Ki-67                 pearson: -0.0711  spearman: 0.0418
+    Pan-CK                pearson: 0.4215  spearman: 0.3637
+    SMA                   pearson: -0.0151  spearman: -0.0671
+
+============================================================
+  lung_cancer  (2274 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.2663   Mean Spearman: 0.2004
+============================================================
+    CD3e                  pearson: 0.3084  spearman: 0.2880
+    CD4                   pearson: 0.1737  spearman: 0.1266
+    CD8a                  pearson: 0.2955  spearman: 0.1530
+    CD20                  pearson: 0.1647  spearman: -0.0510
+    CD31                  pearson: 0.3136  spearman: 0.3097
+    CD68                  pearson: -0.0353  spearman: 0.0331
+    Ki-67                 pearson: 0.4599  spearman: 0.3828
+    Pan-CK                pearson: 0.1884  spearman: 0.1180
+    SMA                   pearson: 0.5278  spearman: 0.4436
+Canonical marker set (18): ['aSMA', 'ATPase', 'CD3', 'CD4', 'CD8', 'CD11c', 'CD20', 'CD31', 'CD45', 'CD45RA', 'CD68', 'FOXP3', 'HLA-DR', 'Isotype', 'KI67', 'PanCK', 'PD1', 'PDL1']
+Loading breast_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['CD45RA']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading breast_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading kidney_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading kidney_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading lung_cancer into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading lung_normal into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Loading tonsil_rep1 into RAM ... (patch_size_level0=466)
+  Missing markers (masked out): ['ATPase', 'CD45', 'FOXP3', 'Isotype']
+  Loaded: (19200, 15232, 3)  (0.88 GB)
+Dataset ready: 15404 patches across 7 slide(s).
+
+  Shared markers (9): ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+
+============================================================
+  breast_cancer  (1797 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.1537   Mean Spearman: 0.1355
+============================================================
+    CD3e                  pearson: -0.2038  spearman: -0.2436
+    CD4                   pearson: 0.1745  spearman: 0.1537
+    CD8a                  pearson: -0.0188  spearman: -0.0829
+    CD20                  pearson: 0.2856  spearman: 0.2620
+    CD31                  pearson: 0.0492  spearman: 0.0712
+    CD68                  pearson: 0.0940  spearman: 0.0879
+    Ki-67                 pearson: 0.3918  spearman: 0.4388
+    Pan-CK                pearson: 0.4762  spearman: 0.4295
+    SMA                   pearson: 0.1346  spearman: 0.1026
+
+============================================================
+  breast_normal  (2124 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.1670   Mean Spearman: 0.1371
+============================================================
+    CD3e                  pearson: 0.1510  spearman: 0.1180
+    CD4                   pearson: 0.1923  spearman: 0.0480
+    CD8a                  pearson: 0.0771  spearman: 0.1024
+    CD20                  pearson: 0.2595  spearman: 0.2577
+    CD31                  pearson: 0.3556  spearman: 0.2996
+    CD68                  pearson: 0.2161  spearman: 0.1191
+    Ki-67                 pearson: -0.1577  spearman: -0.1575
+    Pan-CK                pearson: 0.2774  spearman: 0.2593
+    SMA                   pearson: 0.1322  spearman: 0.1877
+
+============================================================
+  kidney_cancer  (2356 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.2012   Mean Spearman: 0.1365
+============================================================
+    CD3e                  pearson: 0.0547  spearman: 0.0718
+    CD4                   pearson: 0.3660  spearman: 0.2678
+    CD8a                  pearson: 0.1804  spearman: 0.1558
+    CD20                  pearson: 0.2148  spearman: 0.1260
+    CD31                  pearson: 0.2533  spearman: 0.0674
+    CD68                  pearson: 0.2722  spearman: 0.2650
+    Ki-67                 pearson: -0.0574  spearman: -0.0322
+    Pan-CK                pearson: 0.5318  spearman: 0.4360
+    SMA                   pearson: -0.0049  spearman: -0.1295
+
+============================================================
+  kidney_normal  (2254 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.0463   Mean Spearman: 0.0363
+============================================================
+    CD3e                  pearson: -0.0246  spearman: -0.0128
+    CD4                   pearson: -0.0207  spearman: -0.0762
+    CD8a                  pearson: 0.1356  spearman: 0.1830
+    CD20                  pearson: 0.2392  spearman: 0.1716
+    CD31                  pearson: -0.0623  spearman: -0.1558
+    CD68                  pearson: -0.1858  spearman: -0.1212
+    Ki-67                 pearson: -0.0711  spearman: 0.0418
+    Pan-CK                pearson: 0.4215  spearman: 0.3637
+    SMA                   pearson: -0.0151  spearman: -0.0671
+
+============================================================
+  lung_cancer  (2274 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.2663   Mean Spearman: 0.2004
+============================================================
+    CD3e                  pearson: 0.3084  spearman: 0.2880
+    CD4                   pearson: 0.1737  spearman: 0.1266
+    CD8a                  pearson: 0.2955  spearman: 0.1530
+    CD20                  pearson: 0.1647  spearman: -0.0510
+    CD31                  pearson: 0.3136  spearman: 0.3097
+    CD68                  pearson: -0.0353  spearman: 0.0331
+    Ki-67                 pearson: 0.4599  spearman: 0.3828
+    Pan-CK                pearson: 0.1884  spearman: 0.1180
+    SMA                   pearson: 0.5278  spearman: 0.4436
+
+============================================================
+  lung_normal  (2274 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.0800   Mean Spearman: 0.0431
+============================================================
+    CD3e                  pearson: 0.0447  spearman: -0.0745
+    CD4                   pearson: -0.0612  spearman: -0.0031
+    CD8a                  pearson: 0.0247  spearman: 0.0068
+    CD20                  pearson: -0.0414  spearman: -0.0768
+    CD31                  pearson: 0.1643  spearman: 0.1025
+    CD68                  pearson: 0.0561  spearman: 0.0835
+    Ki-67                 pearson: 0.2884  spearman: 0.2492
+    Pan-CK                pearson: -0.0491  spearman: -0.0329
+    SMA                   pearson: 0.2934  spearman: 0.1327
+
+============================================================
+  tonsil_rep1  (2325 patches)  valid markers: ['CD3e', 'CD4', 'CD8a', 'CD20', 'CD31', 'CD68', 'Ki-67', 'Pan-CK', 'SMA']
+  Mean Pearson:  0.2108   Mean Spearman: 0.1744
+============================================================
+    CD3e                  pearson: 0.2174  spearman: 0.1801
+    CD4                   pearson: 0.1889  spearman: 0.1297
+    CD8a                  pearson: 0.4093  spearman: 0.4615
+    CD20                  pearson: 0.6049  spearman: 0.6709
+    CD31                  pearson: 0.0595  spearman: 0.0887
+    CD68                  pearson: 0.1299  spearman: 0.0987
+    Ki-67                 pearson: 0.1442  spearman: 0.1205
+    Pan-CK                pearson: -0.0920  spearman: -0.3163
+    SMA                   pearson: 0.2355  spearman: 0.1356
+
+  Results saved to outputs_orion_UNI2-full/
+
+  Shared markers (14): ['CD31', 'CD45', 'CD68', 'CD4', 'FOXP3', 'CD8a', 'CD45RO', 'CD20', 'PD-L1', 'CD3e', 'CD163', 'Ki-67', 'Pan-CK', 'SMA']
+  Shared markers (14): ['CD31', 'CD45', 'CD68', 'CD4', 'FOXP3', 'CD8a', 'CD45RO', 'CD20', 'PD-L1', 'CD3e', 'CD163', 'Ki-67', 'Pan-CK', 'SMA']
+
+
+============================================================
+
+
+  PATHOCELL  (3381 patches)  
+
+  Mean Pearson:  0.1975   Mean Spearman: 0.1697  
+
+============================================================
+
+    CD31                  pearson: 0.0944  spearman: 0.1170    
+
+    CD45                  pearson: 0.6184  spearman: 0.5167   
+
+    CD68                  pearson: 0.0928  spearman: 0.0985   
+    
+    CD4                   pearson: 0.3196  spearman: 0.3081   
+
+    FOXP3                 pearson: 0.0033  spearman: 0.0178   
+
+    CD8a                  pearson: -0.1581  spearman: -0.1357    
+
+    CD45RO                pearson: 0.2240  spearman: 0.2483    
+
+    CD20                  pearson: 0.3212  spearman: 0.0734    
+
+    PD-L1                 pearson: 0.0151  spearman: 0.0193    
+
+    CD3e                  pearson: 0.3157  spearman: 0.2350    
+
+    CD163                 pearson: 0.1385  spearman: 0.1437    
+
+    Ki-67                 pearson: 0.0561  spearman: 0.0655   
+
+    Pan-CK                pearson: 0.2040  spearman: 0.2088   
+
+    SMA                   pearson: 0.5202  spearman: 0.4600   
+
+
+  Results saved to outputs_orion_UNI2-full/
+
+Loading 3717 source TIFs into RAM (train)...
+
+
+  Ready: 14868 patches, markers: ['Pan-CK', 'CD3', 'Dapi'] 
+
+
+
+[HEMIT train]  Shared markers (2): ['Pan-CK', 'CD3e']
+
+============================================================
+
+
+  HEMIT TRAIN  (14868 patches) 
+
+
+  Mean Pearson:  0.3768   Mean Spearman: 0.3609  
+
+
+============================================================
+
+
+    Pan-CK                pearson: 0.5827  spearman: 0.6219   
+
+
+    CD3e                  pearson: 0.1710  spearman: 0.0998  
+
+
+Loading 630 source TIFs into RAM (val)...
+
+
+  Ready: 2520 patches, markers: ['Pan-CK', 'CD3', 'Dapi'] 
+
+
+
+[HEMIT val]  Shared markers (2): ['Pan-CK', 'CD3e']
+
+
+============================================================
+
+  HEMIT VAL  (2520 patches)  HEMIT VAL  (2520 patches)  HEMIT VAL  (2520 patches)
+
+
+  Mean Pearson:  0.4994   Mean Spearman: 0.5479  
+
+
+============================================================
+
+    Pan-CK                pearson: 0.5524  spearman: 0.5687   
+    CD3e                  pearson: 0.4465  spearman: 0.5271   
+
+
+Loading 945 source TIFs into RAM (test)...
+
+  Ready: 3780 patches, markers: ['Pan-CK', 'CD3', 'Dapi'] 
+
+[HEMIT test]  Shared markers (2): ['Pan-CK', 'CD3e']
+
+============================================================
+
+  HEMIT TEST  (3780 patches)  
+
+  Mean Pearson:  0.2278   Mean Spearman: 0.2221  
+
+============================================================
+
+    Pan-CK                pearson: 0.3802  spearman: 0.3716    
+    CD3e                  pearson: 0.0753  spearman: 0.0726  
+
+
+Results saved to outputs_orion_UNI2-full/
+
+
+

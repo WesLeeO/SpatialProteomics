@@ -1,2 +1,23 @@
+# --- heavy data / binaries (images png/jpg/jpeg are intentionally NOT ignored) ---
 *.csv
 *.parquet
+*.pth
+*.h5
+*.npy
+*.npz
+*.pt
+*.ckpt
+*.safetensors
+*.tif
+*.tiff
+*.svs
+*.ndpi
+*.zarr/
+*.pkl
+*.pickle
+*.geojson
+
+# --- python caches ---
+__pycache__/
+*.pyc
+*.pyo
